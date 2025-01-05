@@ -26,3 +26,6 @@ add_subdirectory(src)
 
 enable_testing()
 add_subdirectory(tests)
+
+# Define UNIT_TEST for test builds
+target_compile_definitions(AbstractSyntaxTree PUBLIC $<$<CONFIG:Debug>:UNIT_TEST>)

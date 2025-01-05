@@ -5,6 +5,8 @@ foreach(_test IN ITEMS ${TEST_FILES})
     get_filename_component(_test_name ${_test} NAME_WE)
     add_executable(${_test_name} ${_test})
 
+    target_compile_definitions(${_test_name} PRIVATE UNIT_TEST)
+
     target_link_libraries(${_test_name} PRIVATE AbstractSyntaxTree)
 
     set_target_properties(${_test_name} PROPERTIES

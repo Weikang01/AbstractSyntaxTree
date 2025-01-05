@@ -60,8 +60,9 @@ namespace AST
 			InvalidExpression,
 			EmptyExpression,
 		};
-
+#ifndef UNIT_TEST
 	private:
+#endif
 		struct ParseResult
 		{
 			size_t extractedLength = 0;

@@ -47,11 +47,11 @@ namespace AST
 
 		if (!hasDigit)
 		{
-			return ParseResult(0);
+			return ParseResult(0, ResultType::InvalidNumberFormat);
 		}
 		else if (hasSign && index == 1)
 		{
-			return ParseResult(0);
+			return ParseResult(index, ResultType::InvalidNumberFormat);
 		}
 		else
 		{
