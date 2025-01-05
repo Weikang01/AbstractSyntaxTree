@@ -10,10 +10,6 @@ namespace AST
 		int mDenominator;
 
 		void Simplify();
-
-		static void SimplifyForOperation(const Rational& r1, const Rational& r2,
-			int& num1, int& den1, int& num2, int& den2);
-
 	public:
 		Rational(int numerator = 0, int denominator = 1);
 

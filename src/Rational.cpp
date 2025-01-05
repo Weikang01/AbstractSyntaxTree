@@ -16,16 +16,6 @@ namespace AST
 			mDenominator = -mDenominator;
 		}
 	}
-	void Rational::SimplifyForOperation(const Rational& r1, const Rational& r2, int& num1, int& den1, int& num2, int& den2)
-	{
-		int gcd1 = std::gcd(r1.mNumerator, r2.mDenominator);
-		int gcd2 = std::gcd(r2.mNumerator, r1.mDenominator);
-		num1 = r1.mNumerator / gcd1;
-		den1 = r1.mDenominator / gcd2;
-		num2 = r2.mNumerator / gcd2;
-		den2 = r2.mDenominator / gcd1;
-	}
-	;
 
 	Rational::Rational(int numerator, int denominator)
 	{
@@ -39,30 +29,33 @@ namespace AST
 
 	Rational Rational::operator+(const Rational& other) const
 	{
-		int num1, den1, num2, den2;
-		SimplifyForOperation(*this, other, num1, den1, num2, den2);
+		int gcdDen = std::gcd(mDenominator, other.mDenominator);
+		int newDen = mDenominator * other.mDenominator / gcdDen;
+		int gcdNum = std::gcd(newDen, std::gcd(mNumerator, other.mNumerator));
+		int newNum = mNumerator * (newDen / mDenominator) + other.mNumerator * (newDen / other.mDenominator);
+		newDen /= gcdNum;
 
-		int newNumerator = num1 * den2 + num2 * den1;
-		int newDenominator = den1 * den2;
-
-		return Rational(newNumerator, newDenominator);
+		return Rational(newNum, newDen);
 	}
 
 	Rational Rational::operator-(const Rational& other) const
 	{
-		int num1, den1, num2, den2;
-		SimplifyForOperation(*this, other, num1, den1, num2, den2);
-		
-		int newNumerator = num1 * den2 - num2 * den1;
-		int newDenominator = den1 * den2;
+		int gcdDen = std::gcd(mDenominator, other.mDenominator);
+		int newDen = mDenominator * other.mDenominator / gcdDen;
+		int gcdNum = std::gcd(newDen, std::gcd(mNumerator, other.mNumerator));
+		int newNum = mNumerator * (newDen / mDenominator) - other.mNumerator * (newDen / other.mDenominator);
 
-		return Rational(newNumerator, newDenominator);
+		return Rational(newNum, newDen);
 	}
 
 	Rational Rational::operator*(const Rational& other) const
 	{
-		int num1, den1, num2, den2;
-		SimplifyForOperation(*this, other, num1, den1, num2, den2);
+		int gcd1 = std::gcd(mNumerator, other.mDenominator);
+		int gcd2 = std::gcd(other.mNumerator, mDenominator);
+		int num1 = mNumerator / gcd1;
+		int den1 = mDenominator / gcd2;
+		int num2 = other.mNumerator / gcd2;
+		int den2 = other.mDenominator / gcd1;
 
 		return Rational(num1 * num2, den1 * den2);
 	}
@@ -74,10 +67,14 @@ namespace AST
 			throw std::invalid_argument("Division by zero in Rational");
 		}
 
-		int num1, den1, num2, den2;
-		SimplifyForOperation(*this, other, num1, den1, num2, den2);
+		int gcd1 = std::gcd(mNumerator, other.mNumerator);
+		int gcd2 = std::gcd(mDenominator, other.mDenominator);
+		int num1 = mNumerator / gcd1;
+		int den1 = mDenominator / gcd2;
+		int num2 = other.mDenominator / gcd2;
+		int den2 = other.mNumerator / gcd1;
 
-		return Rational(num1 * den2, den1 * num2);
+		return Rational(num1 * num2, den1 * den2);
 	}
 
 	Rational& Rational::operator+=(const Rational& other)
