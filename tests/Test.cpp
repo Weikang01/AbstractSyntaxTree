@@ -134,9 +134,16 @@ TEST_CASE("RationalUnaryOperatorsTest", "[RationalUnaryOperatorsTest]")
 class ParserTest
 {
 public:
+	Parser mParser;
+
+	ParserTest()
+	{
+		mParser = Parser();
+	}
+
 	Parser::ParseResult TestExtractNumber(const std::string& expression)
 	{
-		return Parser::ExtractNumber(expression);
+		return mParser.ExtractNumber(expression);
 	}
 };
 
@@ -146,47 +153,47 @@ TEST_CASE("ParserTest", "[ParserTest]")
 	SECTION("ExtractNumber")
 	{
 		Parser::ParseResult result = parserTest.TestExtractNumber("123");
-		REQUIRE(result.extractedLength == 3);
-		REQUIRE(result.errorType == Parser::ResultType::NoError);
+		REQUIRE(result.mExtractedLength == 3);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
 		result = parserTest.TestExtractNumber("123.456");
-		REQUIRE(result.extractedLength == 7);
-		REQUIRE(result.errorType == Parser::ResultType::NoError);
+		REQUIRE(result.mExtractedLength == 7);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
 		result = parserTest.TestExtractNumber("123.");
-		REQUIRE(result.extractedLength == 4);
-		REQUIRE(result.errorType == Parser::ResultType::NoError);
+		REQUIRE(result.mExtractedLength == 4);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
 		result = parserTest.TestExtractNumber(".456");
-		REQUIRE(result.extractedLength == 4);
-		REQUIRE(result.errorType == Parser::ResultType::NoError);
+		REQUIRE(result.mExtractedLength == 4);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
 		result = parserTest.TestExtractNumber("123.456.789");
-		REQUIRE(result.errorPos == 7);
-		REQUIRE(result.errorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorPos == 7);
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractNumber("hello");
-		REQUIRE(result.errorPos == 0);
-		REQUIRE(result.errorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorPos == 0);
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractNumber("");
-		REQUIRE(result.errorPos == 0);
-		REQUIRE(result.errorType == Parser::ResultType::EmptyExpression);
+		REQUIRE(result.mErrorPos == 0);
+		REQUIRE(result.mErrorType == Parser::ResultType::EmptyExpression);
 		result = parserTest.TestExtractNumber("+");
-		REQUIRE(result.errorPos == 0);
-		REQUIRE(result.errorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorPos == 0);
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractNumber("-");
-		REQUIRE(result.errorPos == 0);
-		REQUIRE(result.errorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorPos == 0);
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractNumber(".");
-		REQUIRE(result.errorPos == 0);
-		REQUIRE(result.errorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorPos == 0);
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractNumber("-.");
-		REQUIRE(result.errorPos == 0);
-		REQUIRE(result.errorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorPos == 0);
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractNumber("+.");
-		REQUIRE(result.errorPos == 0);
-		REQUIRE(result.errorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorPos == 0);
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractNumber("-123.");
-		REQUIRE(result.extractedLength == 5);
-		REQUIRE(result.errorType == Parser::ResultType::NoError);
+		REQUIRE(result.mExtractedLength == 5);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
 		result = parserTest.TestExtractNumber("+123.");
-		REQUIRE(result.extractedLength == 5);
-		REQUIRE(result.errorType == Parser::ResultType::NoError);
+		REQUIRE(result.mExtractedLength == 5);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
 	}
 }
 

@@ -39,12 +39,16 @@ namespace AST
 	class OperatorRegistry
 	{
 	private:
-		std::vector<std::unique_ptr<Operator>> mOperators;
+		std::vector<Operator*> mOperators = {};
 
 	public:
 		OperatorRegistry() = default;
-		void RegisterOperator(std::unique_ptr<Operator> op);
+		void RegisterOperator(Operator* mOperator);
 		const Operator* GetOperator(const std::string& symbol) const;
+
+		const std::vector<Operator*>& GetOperators() const { return mOperators; }
+
+		static const OperatorRegistry& GetDefaultRegistry();
 	};
 	
 	class Parser
@@ -63,24 +67,27 @@ namespace AST
 #ifndef UNIT_TEST
 	private:
 #endif
+		OperatorRegistry mOperatorRegistry;
+
 		struct ParseResult
 		{
-			size_t extractedLength = 0;
-			size_t errorPos = -1;
-			ResultType errorType = ResultType::NoError;
+			size_t mExtractedLength = 0;
+			size_t mErrorPos = -1;
+			ResultType mErrorType = ResultType::NoError;
+			const Operator* mOperator = nullptr;
 
-			ParseResult(size_t extractedLength) : extractedLength(extractedLength) {}
-			ParseResult(size_t errorPos, ResultType errorType) : errorPos(errorPos), errorType(errorType) {}
+			ParseResult(size_t mExtractedLength, const Operator* mOperator = nullptr) : mExtractedLength(mExtractedLength), mOperator(mOperator) {}
+			ParseResult(size_t mErrorPos, ResultType mErrorType) : mErrorPos(mErrorPos), mErrorType(mErrorType) {}
 
-			operator bool() const { return errorType == ResultType::NoError; }
-			bool HasError() const { return errorType != ResultType::NoError; }
+			operator bool() const { return mErrorType == ResultType::NoError; }
+			bool HasError() const { return mErrorType != ResultType::NoError; }
 
 			friend std::ostream& operator<<(std::ostream& os, const ParseResult& result)
 			{
 				if (result.HasError())
 				{
-					os << "Error at position " << result.errorPos << ": ";
-					switch (result.errorType)
+					os << "Error at position " << result.mErrorPos << ": ";
+					switch (result.mErrorType)
 					{
 					case ResultType::InvalidCharacter:
 						os << "Invalid character";
@@ -118,11 +125,15 @@ namespace AST
 		/// </summary>
 		/// <param name="expression">expression to extract the number from</param>
 		/// <returns>ParseResult object containing the extracted length and error information</returns>
-		static ParseResult ExtractNumber(const std::string& expression);
+		ParseResult ExtractNumber(const std::string& expression);
 
-		static Rational ParseNumber(const std::string& expression, const size_t& extractedLength);
+		Rational ParseNumber(const std::string& expression, const size_t& mExtractedLength);
+
+		ParseResult ExtractOperator(const std::string& expression);
 
 	public:
-		static Node* Parse(const std::string& expression);
+		Parser(const OperatorRegistry& operatorRegistry = OperatorRegistry::GetDefaultRegistry()) : mOperatorRegistry(operatorRegistry) {}
+
+		Node* Parse(const std::string& expression);
 	};
 }
