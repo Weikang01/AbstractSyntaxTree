@@ -195,6 +195,36 @@ TEST_CASE("ParserTest", "[ParserTest]")
 		REQUIRE(result.mExtractedLength == 5);
 		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
 	}
+
+	SECTION("ExtractOperator")
+	{
+		Parser::ParseResult result = parserTest.mParser.ExtractOperator("123");
+		REQUIRE(result.mExtractedLength == 0);
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidOperator);
+		result = parserTest.mParser.ExtractOperator("+");
+		REQUIRE(result.mExtractedLength == 1);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		result = parserTest.mParser.ExtractOperator("-");
+		REQUIRE(result.mExtractedLength == 1);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		result = parserTest.mParser.ExtractOperator("*");
+		REQUIRE(result.mExtractedLength == 1);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		result = parserTest.mParser.ExtractOperator("/");
+		REQUIRE(result.mExtractedLength == 1);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		result = parserTest.mParser.ExtractOperator("++");
+		REQUIRE(result.mExtractedLength == 1);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		result = parserTest.mParser.ExtractOperator("sinhabc");
+		REQUIRE(result.mExtractedLength == 4);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		result = parserTest.mParser.ExtractOperator("cosabc");
+		REQUIRE(result.mExtractedLength == 3);
+		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		result = parserTest.mParser.ExtractOperator("taa");
+		REQUIRE(result.mErrorType == Parser::ResultType::InvalidOperator);
+	}
 }
 
 }

@@ -1,6 +1,10 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <map>
+#include "Symbol.h"
+#include "Operator.h"
+#include "Irrational.h"
 #include "Rational.h"
 
 namespace AST
@@ -11,44 +15,24 @@ namespace AST
 		virtual ~Node() = default;
 	};
 
-	enum class OperatorType : uint8_t
+	struct RationalNode : public Node
 	{
-		Unary, // Unary operators have only one operand
-		Binary, // Binary operators have two operands
+		Rational mValue;
+		RationalNode(const Rational& value) : mValue(value) {}
 	};
 
-	enum class Associativity : uint8_t
+	struct IrrationalNode : public Node
 	{
-		LeftToRight,
-		RightToLeft,
+		const Irrational* mIrrational;
+		IrrationalNode(const Irrational* irrational) : mIrrational(irrational) {}
 	};
 
-	struct Operator
+	struct OperatorNode : public Node
 	{
-		OperatorType mType;
-		Associativity mAssociativity;
-		uint16_t mPrecedence;
-		std::string mSymbol;
-
-		Operator(OperatorType type, Associativity associativity, uint16_t precedence, const std::string& symbol)
-			: mType(type), mAssociativity(associativity), mPrecedence(precedence), mSymbol(symbol) {};
-
-		virtual ~Operator() = default;
-	};
-
-	class OperatorRegistry
-	{
-	private:
-		std::vector<Operator*> mOperators = {};
-
-	public:
-		OperatorRegistry() = default;
-		void RegisterOperator(Operator* mOperator);
-		const Operator* GetOperator(const std::string& symbol) const;
-
-		const std::vector<Operator*>& GetOperators() const { return mOperators; }
-
-		static const OperatorRegistry& GetDefaultRegistry();
+		const Operator* mOperator;
+		Node* mLeft = nullptr;
+		Node* mRight = nullptr;
+		OperatorNode(const Operator* op) : mOperator(op) {}
 	};
 	
 	class Parser
@@ -68,16 +52,17 @@ namespace AST
 	private:
 #endif
 		OperatorRegistry mOperatorRegistry;
+		IrrationalRegistry mIrrationalRegistry;
 
 		struct ParseResult
 		{
 			size_t mExtractedLength = 0;
 			size_t mErrorPos = -1;
 			ResultType mErrorType = ResultType::NoError;
-			const Operator* mOperator = nullptr;
+			const Symbol* mSymbol = nullptr;
 
-			ParseResult(size_t mExtractedLength, const Operator* mOperator = nullptr) : mExtractedLength(mExtractedLength), mOperator(mOperator) {}
-			ParseResult(size_t mErrorPos, ResultType mErrorType) : mErrorPos(mErrorPos), mErrorType(mErrorType) {}
+			ParseResult(const size_t extractedLength, const Symbol* symbol = nullptr) : mExtractedLength(extractedLength), mSymbol(symbol) {}
+			ParseResult(const size_t errorPos, const ResultType errorType) : mErrorPos(errorPos), mErrorType(errorType) {}
 
 			operator bool() const { return mErrorType == ResultType::NoError; }
 			bool HasError() const { return mErrorType != ResultType::NoError; }
@@ -125,14 +110,26 @@ namespace AST
 		/// </summary>
 		/// <param name="expression">expression to extract the number from</param>
 		/// <returns>ParseResult object containing the extracted length and error information</returns>
-		ParseResult ExtractNumber(const std::string& expression);
+		ParseResult ExtractNumber(const std::string& expression, const size_t& offset = 0);
 
 		Rational ParseNumber(const std::string& expression, const size_t& mExtractedLength);
 
-		ParseResult ExtractOperator(const std::string& expression);
+		ParseResult ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const size_t& offset = 0);
+
+		ParseResult ExtractOperator(const std::string& expression, const size_t& offset = 0);
+
+		ParseResult ExtractIrrational(const std::string& expression, const size_t& offset = 0);
 
 	public:
-		Parser(const OperatorRegistry& operatorRegistry = OperatorRegistry::GetDefaultRegistry()) : mOperatorRegistry(operatorRegistry) {}
+		Parser(const OperatorRegistry& operatorRegistry = OperatorRegistry::GetDefaultRegistry(),
+			const IrrationalRegistry& irrationalRegistry = IrrationalRegistry::GetDefaultRegistry())
+			: mOperatorRegistry(operatorRegistry), mIrrationalRegistry(irrationalRegistry)
+		{}
+		Parser(Parser&&) = default;
+		Parser(const Parser&) = default;
+		Parser& operator=(Parser&&) = default;
+		Parser& operator=(const Parser&) = default;
+		virtual ~Parser() = default;
 
 		Node* Parse(const std::string& expression);
 	};
