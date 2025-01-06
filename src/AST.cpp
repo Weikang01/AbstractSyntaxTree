@@ -1,10 +1,9 @@
 #include "AST.h"
-#include <stack>
-
+#include <deque>
 
 namespace AST
 {
-	Parser::ParseResult Parser::ExtractNumber(const std::string& expression, const size_t& offset)
+	Parser::ParseResult Parser::ExtractRational(const std::string& expression, const size_t& offset)
 	{
 		if (expression.size() <= offset)
 		{
@@ -123,13 +122,20 @@ namespace AST
 
 	Node* Parser::Parse(const std::string& expression)
 	{
-		std::stack<Node*> operandStack;
-		std::stack<Node*> operatorStack;
+		std::deque<Node*> operandStack;
+		std::deque<Node*> operatorStack;
 
 		size_t offset = 0;
 		while (offset < expression.size())
 		{
-			// TODO: Implement parsing logic
+			ParseResult result = ExtractRational(expression, offset);
+			if (!result.HasError())
+			{
+				operandStack.push_back(new RationalNode(ParseNumber(expression, result.mExtractedLength)));
+				offset += result.mExtractedLength;
+				continue;
+			}
+			
 		}
 
 		return nullptr;

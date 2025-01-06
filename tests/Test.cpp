@@ -141,57 +141,57 @@ public:
 		mParser = Parser();
 	}
 
-	Parser::ParseResult TestExtractNumber(const std::string& expression)
+	Parser::ParseResult TestExtractRational(const std::string& expression)
 	{
-		return mParser.ExtractNumber(expression);
+		return mParser.ExtractRational(expression);
 	}
 };
 
 TEST_CASE("ParserTest", "[ParserTest]")
 {
 	ParserTest parserTest;
-	SECTION("ExtractNumber")
+	SECTION("ExtractRational")
 	{
-		Parser::ParseResult result = parserTest.TestExtractNumber("123");
+		Parser::ParseResult result = parserTest.TestExtractRational("123");
 		REQUIRE(result.mExtractedLength == 3);
 		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
-		result = parserTest.TestExtractNumber("123.456");
+		result = parserTest.TestExtractRational("123.456");
 		REQUIRE(result.mExtractedLength == 7);
 		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
-		result = parserTest.TestExtractNumber("123.");
+		result = parserTest.TestExtractRational("123.");
 		REQUIRE(result.mExtractedLength == 4);
 		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
-		result = parserTest.TestExtractNumber(".456");
+		result = parserTest.TestExtractRational(".456");
 		REQUIRE(result.mExtractedLength == 4);
 		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
-		result = parserTest.TestExtractNumber("123.456.789");
+		result = parserTest.TestExtractRational("123.456.789");
 		REQUIRE(result.mErrorPos == 7);
 		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
-		result = parserTest.TestExtractNumber("hello");
+		result = parserTest.TestExtractRational("hello");
 		REQUIRE(result.mErrorPos == 0);
 		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
-		result = parserTest.TestExtractNumber("");
+		result = parserTest.TestExtractRational("");
 		REQUIRE(result.mErrorPos == 0);
 		REQUIRE(result.mErrorType == Parser::ResultType::EmptyExpression);
-		result = parserTest.TestExtractNumber("+");
+		result = parserTest.TestExtractRational("+");
 		REQUIRE(result.mErrorPos == 0);
 		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
-		result = parserTest.TestExtractNumber("-");
+		result = parserTest.TestExtractRational("-");
 		REQUIRE(result.mErrorPos == 0);
 		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
-		result = parserTest.TestExtractNumber(".");
+		result = parserTest.TestExtractRational(".");
 		REQUIRE(result.mErrorPos == 0);
 		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
-		result = parserTest.TestExtractNumber("-.");
+		result = parserTest.TestExtractRational("-.");
 		REQUIRE(result.mErrorPos == 0);
 		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
-		result = parserTest.TestExtractNumber("+.");
+		result = parserTest.TestExtractRational("+.");
 		REQUIRE(result.mErrorPos == 0);
 		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
-		result = parserTest.TestExtractNumber("-123.");
+		result = parserTest.TestExtractRational("-123.");
 		REQUIRE(result.mExtractedLength == 5);
 		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
-		result = parserTest.TestExtractNumber("+123.");
+		result = parserTest.TestExtractRational("+123.");
 		REQUIRE(result.mExtractedLength == 5);
 		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
 	}

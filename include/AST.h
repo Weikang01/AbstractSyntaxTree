@@ -12,27 +12,43 @@ namespace AST
 	struct Node
 	{
 	public:
+		enum class NodeType : uint8_t
+		{
+			Unknown,
+			Rational,
+			Irrational,
+			Operator,
+		};
+
+		NodeType mType = NodeType::Unknown;
+
+		Node(const NodeType type) : mType(type) {}
+
 		virtual ~Node() = default;
 	};
 
 	struct RationalNode : public Node
 	{
 		Rational mValue;
-		RationalNode(const Rational& value) : mValue(value) {}
+
+		RationalNode(const Rational& value)
+			: mValue(value), Node(NodeType::Rational) {}
 	};
 
 	struct IrrationalNode : public Node
 	{
-		const Irrational* mIrrational;
-		IrrationalNode(const Irrational* irrational) : mIrrational(irrational) {}
+		const std::weak_ptr<Irrational> mIrrational;
+		IrrationalNode(const std::shared_ptr<Irrational>& irrational)
+			: mIrrational(irrational), Node(NodeType::Irrational) {}
 	};
 
 	struct OperatorNode : public Node
 	{
-		const Operator* mOperator;
-		Node* mLeft = nullptr;
-		Node* mRight = nullptr;
-		OperatorNode(const Operator* op) : mOperator(op) {}
+		// support for unary, binary, function singular, function dual, function multiple
+		const std::weak_ptr<Operator> mOperator;
+		std::vector<std::shared_ptr<Node>> mOperands;
+		OperatorNode(const std::shared_ptr<Operator>& op)
+			: mOperator(op), Node(NodeType::Operator) {}
 	};
 	
 	class Parser
@@ -110,7 +126,7 @@ namespace AST
 		/// </summary>
 		/// <param name="expression">expression to extract the number from</param>
 		/// <returns>ParseResult object containing the extracted length and error information</returns>
-		ParseResult ExtractNumber(const std::string& expression, const size_t& offset = 0);
+		ParseResult ExtractRational(const std::string& expression, const size_t& offset = 0);
 
 		Rational ParseNumber(const std::string& expression, const size_t& mExtractedLength);
 
