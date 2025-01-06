@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <deque>
+
 #include "Symbol.h"
 #include "Operator.h"
 #include "Irrational.h"
@@ -18,6 +20,7 @@ namespace AST
 			Rational,
 			Irrational,
 			Operator,
+			Variable,
 		};
 
 		NodeType mType = NodeType::Unknown;
@@ -37,18 +40,29 @@ namespace AST
 
 	struct IrrationalNode : public Node
 	{
-		const std::weak_ptr<Irrational> mIrrational;
-		IrrationalNode(const std::shared_ptr<Irrational>& irrational)
-			: mIrrational(irrational), Node(NodeType::Irrational) {}
+		const Irrational* mIrrational;
+		IrrationalNode(const Symbol* symbol)
+			: mIrrational(dynamic_cast<const Irrational*>(symbol)), Node(NodeType::Irrational)
+		{}
+	};
+
+	struct VariableNode : public Node
+	{
+		const Symbol* mVariable;
+		VariableNode(const Symbol* symbol)
+			: mVariable(symbol), Node(NodeType::Variable)
+		{
+		}
 	};
 
 	struct OperatorNode : public Node
 	{
 		// support for unary, binary, function singular, function dual, function multiple
-		const std::weak_ptr<Operator> mOperator;
-		std::vector<std::shared_ptr<Node>> mOperands;
-		OperatorNode(const std::shared_ptr<Operator>& op)
-			: mOperator(op), Node(NodeType::Operator) {}
+		const Operator* mOperator;
+		std::vector<Node*> mOperands;
+		OperatorNode(const Symbol* symbol)
+			: mOperator(dynamic_cast<const Operator*>(symbol)), Node(NodeType::Operator)
+		{}
 	};
 	
 	class Parser
@@ -77,6 +91,7 @@ namespace AST
 			ResultType mErrorType = ResultType::NoError;
 			const Symbol* mSymbol = nullptr;
 
+			ParseResult() = default;
 			ParseResult(const size_t extractedLength, const Symbol* symbol = nullptr) : mExtractedLength(extractedLength), mSymbol(symbol) {}
 			ParseResult(const size_t errorPos, const ResultType errorType) : mErrorPos(errorPos), mErrorType(errorType) {}
 
@@ -128,13 +143,15 @@ namespace AST
 		/// <returns>ParseResult object containing the extracted length and error information</returns>
 		ParseResult ExtractRational(const std::string& expression, const size_t& offset = 0);
 
-		Rational ParseNumber(const std::string& expression, const size_t& mExtractedLength);
+		Rational ParseRational(const std::string& expression, const size_t& offset, const size_t& mExtractedLength);
 
 		ParseResult ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const size_t& offset = 0);
 
 		ParseResult ExtractOperator(const std::string& expression, const size_t& offset = 0);
 
 		ParseResult ExtractIrrational(const std::string& expression, const size_t& offset = 0);
+
+		void ConstructOperatorTree(std::deque<Node*>& operandStack, std::deque<Node*>& operatorStack, OperatorNode* topOperator = nullptr);
 
 	public:
 		Parser(const OperatorRegistry& operatorRegistry = OperatorRegistry::GetDefaultRegistry(),

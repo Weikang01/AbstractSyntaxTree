@@ -1,5 +1,4 @@
 #include "AST.h"
-#include <deque>
 
 namespace AST
 {
@@ -58,13 +57,13 @@ namespace AST
 		}
 	}
 
-	Rational Parser::ParseNumber(const std::string& expression, const size_t& mExtractedLength)
+	Rational Parser::ParseRational(const std::string& expression, const size_t& offset, const size_t& mExtractedLength)
 	{
 		if (mExtractedLength == 0)
 		{
 			return Rational();
 		}
-		std::string numberStr = expression.substr(0, mExtractedLength);
+		std::string numberStr = expression.substr(offset, mExtractedLength);
 		return Rational::FromString(numberStr);
 	}
 
@@ -120,24 +119,127 @@ namespace AST
 		return ExtractSymbol(mIrrationalRegistry, expression, offset);
 	}
 
+	void Parser::ConstructOperatorTree(std::deque<Node*>& operandStack, std::deque<Node*>& operatorStack, OperatorNode* topOperator)
+	{
+		if (topOperator->mOperator->mType == OperatorType::Binary)
+		{
+			Node* right = operandStack.back();
+			operandStack.pop_back();
+			Node* left = operandStack.back();
+			operandStack.pop_back();
+			operatorStack.pop_back();
+
+			topOperator->mOperands.push_back(left);
+			topOperator->mOperands.push_back(right);
+
+			operandStack.push_back(topOperator);
+		}
+		else if (topOperator->mOperator->mType == OperatorType::Unary)
+		{
+			Node* operand = operandStack.back();
+			operandStack.pop_back();
+			operatorStack.pop_back();
+			topOperator->mOperands.push_back(operand);
+			operandStack.push_back(topOperator);
+		}
+		else if (topOperator->mOperator->mType == OperatorType::FunctionSingular)
+		{
+			Node* operand = operandStack.back();
+			operandStack.pop_back();
+			operatorStack.pop_back();
+			topOperator->mOperands.push_back(operand);
+			operandStack.push_back(topOperator);
+		}
+		else if (topOperator->mOperator->mType == OperatorType::FunctionDual)
+		{
+			Node* right = operandStack.back();
+			operandStack.pop_back();
+			Node* left = operandStack.back();
+			operandStack.pop_back();
+			operatorStack.pop_back();
+			topOperator->mOperands.push_back(left);
+			topOperator->mOperands.push_back(right);
+			operandStack.push_back(topOperator);
+		}
+	}
+
 	Node* Parser::Parse(const std::string& expression)
 	{
 		std::deque<Node*> operandStack;
 		std::deque<Node*> operatorStack;
 
+		Node::NodeType lastNodeType = Node::NodeType::Unknown;
+
 		size_t offset = 0;
 		while (offset < expression.size())
 		{
-			ParseResult result = ExtractRational(expression, offset);
-			if (!result.HasError())
+			if (expression[offset] == ' ')
 			{
-				operandStack.push_back(new RationalNode(ParseNumber(expression, result.mExtractedLength)));
-				offset += result.mExtractedLength;
+				++offset;
 				continue;
 			}
-			
+
+			ParseResult result;
+
+			// TODO: Handle parentheses
+
+			if (lastNodeType != Node::NodeType::Rational)
+			{
+				result = ExtractRational(expression, offset);
+				if (!result.HasError())
+				{
+					operandStack.push_back(new RationalNode(ParseRational(expression, offset, result.mExtractedLength)));
+					offset += result.mExtractedLength;
+					lastNodeType = Node::NodeType::Rational;
+					continue;
+				}
+			}
+
+			result = ExtractIrrational(expression, offset);
+			if (!result.HasError())
+			{
+				operandStack.push_back(new IrrationalNode(result.mSymbol));
+				offset += result.mExtractedLength;
+				lastNodeType = Node::NodeType::Irrational;
+				continue;
+			}
+
+			result = ExtractOperator(expression, offset);
+			if (!result.HasError())
+			{
+				const Operator* op = dynamic_cast<const Operator*>(result.mSymbol);
+				while (!operatorStack.empty()) // TODO: Or closing parenthesis
+				{
+					OperatorNode* operatorNode = dynamic_cast<OperatorNode*>(operatorStack.back());
+					if (operatorNode->mOperator->mPrecedence > op->mPrecedence)
+					{
+						ConstructOperatorTree(operandStack, operatorStack, operatorNode);
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				operatorStack.push_back(new OperatorNode(op));
+				offset += result.mExtractedLength;
+				lastNodeType = Node::NodeType::Operator;
+				continue;
+			}
 		}
 
-		return nullptr;
+		while (!operatorStack.empty())
+		{
+			OperatorNode* operatorNode = dynamic_cast<OperatorNode*>(operatorStack.back());
+			ConstructOperatorTree(operandStack, operatorStack, operatorNode);
+		}
+
+		if (operandStack.size() != 1)
+		{
+			// TODO: Handle dangling operands, report error
+			return nullptr;
+		}
+
+		return operandStack.back();
 	}
 }

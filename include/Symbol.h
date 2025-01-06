@@ -30,7 +30,7 @@ namespace AST
 	public:
 		SymbolRegistry() = default;
 		void RegisterSymbol(std::shared_ptr<Symbol> symbol);
-		void UnregisterOperator(const std::string& symbol);
+		void UnregisterSymbol(const std::string& symbol);
 
 		const std::shared_ptr<SymbolSearchNode>& GetRoot() const { return mRoot; }
 	};

@@ -42,7 +42,7 @@ namespace AST
 		mRoot->Add(symbol);
 	}
 
-	void SymbolRegistry::UnregisterOperator(const std::string& symbol)
+	void SymbolRegistry::UnregisterSymbol(const std::string& symbol)
 	{
 		mRoot->Remove(symbol);
 	}

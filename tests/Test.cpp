@@ -225,6 +225,11 @@ TEST_CASE("ParserTest", "[ParserTest]")
 		result = parserTest.mParser.ExtractOperator("taa");
 		REQUIRE(result.mErrorType == Parser::ResultType::InvalidOperator);
 	}
+
+	SECTION("Parse")
+	{
+		Node* node = parserTest.mParser.Parse("-1+1");
+	}
 }
 
 }
