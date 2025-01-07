@@ -1,71 +1,18 @@
 #pragma once
-#include <iostream>
-#include <vector>
-#include <map>
 #include <deque>
 
+#include "Rational.h"
 #include "Symbol.h"
 #include "Operator.h"
 #include "Irrational.h"
-#include "Rational.h"
+#include "Parenthesis.h"
 
 namespace AST
 {
-	struct Node
-	{
-	public:
-		enum class NodeType : uint8_t
-		{
-			Unknown,
-			Rational,
-			Irrational,
-			Operator,
-			Variable,
-		};
+	struct ASTNode;
+	struct OperatorNode;
 
-		NodeType mType = NodeType::Unknown;
-
-		Node(const NodeType type) : mType(type) {}
-
-		virtual ~Node() = default;
-	};
-
-	struct RationalNode : public Node
-	{
-		Rational mValue;
-
-		RationalNode(const Rational& value)
-			: mValue(value), Node(NodeType::Rational) {}
-	};
-
-	struct IrrationalNode : public Node
-	{
-		const Irrational* mIrrational;
-		IrrationalNode(const Symbol* symbol)
-			: mIrrational(dynamic_cast<const Irrational*>(symbol)), Node(NodeType::Irrational)
-		{}
-	};
-
-	struct VariableNode : public Node
-	{
-		const Symbol* mVariable;
-		VariableNode(const Symbol* symbol)
-			: mVariable(symbol), Node(NodeType::Variable)
-		{
-		}
-	};
-
-	struct OperatorNode : public Node
-	{
-		// support for unary, binary, function singular, function dual, function multiple
-		const Operator* mOperator;
-		std::vector<Node*> mOperands;
-		OperatorNode(const Symbol* symbol)
-			: mOperator(dynamic_cast<const Operator*>(symbol)), Node(NodeType::Operator)
-		{}
-	};
-	
-	class Parser
+	class ASTParser
 	{
 	public:
 		enum class ResultType : uint8_t
@@ -83,6 +30,7 @@ namespace AST
 #endif
 		OperatorRegistry mOperatorRegistry;
 		IrrationalRegistry mIrrationalRegistry;
+		ParenthesisRegistry mParenthesisRegistry;
 
 		struct ParseResult
 		{
@@ -151,19 +99,21 @@ namespace AST
 
 		ParseResult ExtractIrrational(const std::string& expression, const size_t& offset = 0);
 
-		void ConstructOperatorTree(std::deque<Node*>& operandStack, std::deque<Node*>& operatorStack, OperatorNode* topOperator = nullptr);
+		ParseResult ExtractParenthesis(const std::string& expression, const size_t& offset = 0);
+
+		void ReduceOperator(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, OperatorNode* topOperator = nullptr);
 
 	public:
-		Parser(const OperatorRegistry& operatorRegistry = OperatorRegistry::GetDefaultRegistry(),
+		ASTParser(const OperatorRegistry& operatorRegistry = OperatorRegistry::GetDefaultRegistry(),
 			const IrrationalRegistry& irrationalRegistry = IrrationalRegistry::GetDefaultRegistry())
 			: mOperatorRegistry(operatorRegistry), mIrrationalRegistry(irrationalRegistry)
 		{}
-		Parser(Parser&&) = default;
-		Parser(const Parser&) = default;
-		Parser& operator=(Parser&&) = default;
-		Parser& operator=(const Parser&) = default;
-		virtual ~Parser() = default;
+		ASTParser(ASTParser&&) = default;
+		ASTParser(const ASTParser&) = default;
+		ASTParser& operator=(ASTParser&&) = default;
+		ASTParser& operator=(const ASTParser&) = default;
+		virtual ~ASTParser() = default;
 
-		Node* Parse(const std::string& expression);
+		ASTNode* Parse(const std::string& expression);
 	};
 }

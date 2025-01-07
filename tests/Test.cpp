@@ -1,5 +1,5 @@
 #include "Rational.h"
-#include "AST.h"
+#include "ASTParser.h"
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
@@ -134,14 +134,14 @@ TEST_CASE("RationalUnaryOperatorsTest", "[RationalUnaryOperatorsTest]")
 class ParserTest
 {
 public:
-	Parser mParser;
+	ASTParser mParser;
 
 	ParserTest()
 	{
-		mParser = Parser();
+		mParser = ASTParser();
 	}
 
-	Parser::ParseResult TestExtractRational(const std::string& expression)
+	ASTParser::ParseResult TestExtractRational(const std::string& expression)
 	{
 		return mParser.ExtractRational(expression);
 	}
@@ -152,83 +152,83 @@ TEST_CASE("ParserTest", "[ParserTest]")
 	ParserTest parserTest;
 	SECTION("ExtractRational")
 	{
-		Parser::ParseResult result = parserTest.TestExtractRational("123");
+		ASTParser::ParseResult result = parserTest.TestExtractRational("123");
 		REQUIRE(result.mExtractedLength == 3);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.TestExtractRational("123.456");
 		REQUIRE(result.mExtractedLength == 7);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.TestExtractRational("123.");
 		REQUIRE(result.mExtractedLength == 4);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.TestExtractRational(".456");
 		REQUIRE(result.mExtractedLength == 4);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.TestExtractRational("123.456.789");
 		REQUIRE(result.mErrorPos == 7);
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractRational("hello");
 		REQUIRE(result.mErrorPos == 0);
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractRational("");
 		REQUIRE(result.mErrorPos == 0);
-		REQUIRE(result.mErrorType == Parser::ResultType::EmptyExpression);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::EmptyExpression);
 		result = parserTest.TestExtractRational("+");
 		REQUIRE(result.mErrorPos == 0);
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractRational("-");
 		REQUIRE(result.mErrorPos == 0);
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractRational(".");
 		REQUIRE(result.mErrorPos == 0);
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractRational("-.");
 		REQUIRE(result.mErrorPos == 0);
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractRational("+.");
 		REQUIRE(result.mErrorPos == 0);
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidNumberFormat);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidNumberFormat);
 		result = parserTest.TestExtractRational("-123.");
 		REQUIRE(result.mExtractedLength == 5);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.TestExtractRational("+123.");
 		REQUIRE(result.mExtractedLength == 5);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 	}
 
 	SECTION("ExtractOperator")
 	{
-		Parser::ParseResult result = parserTest.mParser.ExtractOperator("123");
+		ASTParser::ParseResult result = parserTest.mParser.ExtractOperator("123");
 		REQUIRE(result.mExtractedLength == 0);
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidOperator);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidOperator);
 		result = parserTest.mParser.ExtractOperator("+");
 		REQUIRE(result.mExtractedLength == 1);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.mParser.ExtractOperator("-");
 		REQUIRE(result.mExtractedLength == 1);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.mParser.ExtractOperator("*");
 		REQUIRE(result.mExtractedLength == 1);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.mParser.ExtractOperator("/");
 		REQUIRE(result.mExtractedLength == 1);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.mParser.ExtractOperator("++");
 		REQUIRE(result.mExtractedLength == 1);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.mParser.ExtractOperator("sinhabc");
 		REQUIRE(result.mExtractedLength == 4);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.mParser.ExtractOperator("cosabc");
 		REQUIRE(result.mExtractedLength == 3);
-		REQUIRE(result.mErrorType == Parser::ResultType::NoError);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::NoError);
 		result = parserTest.mParser.ExtractOperator("taa");
-		REQUIRE(result.mErrorType == Parser::ResultType::InvalidOperator);
+		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidOperator);
 	}
 
 	SECTION("Parse")
 	{
-		Node* node = parserTest.mParser.Parse("-1+1");
+		ASTNode* node = parserTest.mParser.Parse("-1+1");
 	}
 }
 

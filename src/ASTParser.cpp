@@ -1,8 +1,9 @@
-#include "AST.h"
+#include "ASTParser.h"
+#include "ASTNode.h"
 
 namespace AST
 {
-	Parser::ParseResult Parser::ExtractRational(const std::string& expression, const size_t& offset)
+	ASTParser::ParseResult ASTParser::ExtractRational(const std::string& expression, const size_t& offset)
 	{
 		if (expression.size() <= offset)
 		{
@@ -57,7 +58,7 @@ namespace AST
 		}
 	}
 
-	Rational Parser::ParseRational(const std::string& expression, const size_t& offset, const size_t& mExtractedLength)
+	Rational ASTParser::ParseRational(const std::string& expression, const size_t& offset, const size_t& mExtractedLength)
 	{
 		if (mExtractedLength == 0)
 		{
@@ -67,7 +68,7 @@ namespace AST
 		return Rational::FromString(numberStr);
 	}
 
-	Parser::ParseResult Parser::ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const size_t& offset)
+	ASTParser::ParseResult ASTParser::ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const size_t& offset)
 	{
 		if (expression.empty())
 		{
@@ -109,23 +110,28 @@ namespace AST
 		}
 	}
 
-	Parser::ParseResult Parser::ExtractOperator(const std::string& expression, const size_t& offset)
+	ASTParser::ParseResult ASTParser::ExtractOperator(const std::string& expression, const size_t& offset)
 	{
 		return ExtractSymbol(mOperatorRegistry, expression, offset);
 	}
 
-	Parser::ParseResult Parser::ExtractIrrational(const std::string& expression, const size_t& offset)
+	ASTParser::ParseResult ASTParser::ExtractIrrational(const std::string& expression, const size_t& offset)
 	{
 		return ExtractSymbol(mIrrationalRegistry, expression, offset);
 	}
 
-	void Parser::ConstructOperatorTree(std::deque<Node*>& operandStack, std::deque<Node*>& operatorStack, OperatorNode* topOperator)
+	ASTParser::ParseResult ASTParser::ExtractParenthesis(const std::string& expression, const size_t& offset)
+	{
+		return ExtractSymbol(mParenthesisRegistry, expression, offset);
+	}
+
+	void ASTParser::ReduceOperator(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, OperatorNode* topOperator)
 	{
 		if (topOperator->mOperator->mType == OperatorType::Binary)
 		{
-			Node* right = operandStack.back();
+			ASTNode* right = operandStack.back();
 			operandStack.pop_back();
-			Node* left = operandStack.back();
+			ASTNode* left = operandStack.back();
 			operandStack.pop_back();
 			operatorStack.pop_back();
 
@@ -136,7 +142,7 @@ namespace AST
 		}
 		else if (topOperator->mOperator->mType == OperatorType::Unary)
 		{
-			Node* operand = operandStack.back();
+			ASTNode* operand = operandStack.back();
 			operandStack.pop_back();
 			operatorStack.pop_back();
 			topOperator->mOperands.push_back(operand);
@@ -144,7 +150,7 @@ namespace AST
 		}
 		else if (topOperator->mOperator->mType == OperatorType::FunctionSingular)
 		{
-			Node* operand = operandStack.back();
+			ASTNode* operand = operandStack.back();
 			operandStack.pop_back();
 			operatorStack.pop_back();
 			topOperator->mOperands.push_back(operand);
@@ -152,9 +158,9 @@ namespace AST
 		}
 		else if (topOperator->mOperator->mType == OperatorType::FunctionDual)
 		{
-			Node* right = operandStack.back();
+			ASTNode* right = operandStack.back();
 			operandStack.pop_back();
-			Node* left = operandStack.back();
+			ASTNode* left = operandStack.back();
 			operandStack.pop_back();
 			operatorStack.pop_back();
 			topOperator->mOperands.push_back(left);
@@ -163,12 +169,12 @@ namespace AST
 		}
 	}
 
-	Node* Parser::Parse(const std::string& expression)
+	ASTNode* ASTParser::Parse(const std::string& expression)
 	{
-		std::deque<Node*> operandStack;
-		std::deque<Node*> operatorStack;
+		std::deque<ASTNode*> operandStack;
+		std::deque<ASTNode*> operatorStack;
 
-		Node::NodeType lastNodeType = Node::NodeType::Unknown;
+		ASTNode::NodeType lastNodeType = ASTNode::NodeType::Unknown;
 
 		size_t offset = 0;
 		while (offset < expression.size())
@@ -179,18 +185,44 @@ namespace AST
 				continue;
 			}
 
-			ParseResult result;
+			ParseResult result = ExtractParenthesis(expression, offset);
+			if (!result.HasError())
+			{
+				ParenthesisNode* parenthesisNode = new ParenthesisNode(result.mSymbol);
+				if (parenthesisNode->mParenthesis->mIsOpen)
+				{
+					operatorStack.push_back(parenthesisNode);
+					offset += result.mExtractedLength;
+					lastNodeType = ASTNode::NodeType::Parenthesis;
+					continue;
+				}
+				else
+				{
+					// TODO: Handle closing parenthesis
+					while (!operatorStack.empty())
+					{
+						ASTNode* top = operatorStack.back();
+						if (top->mType == ASTNode::NodeType::Parenthesis)
+						{
+							operatorStack.pop_back();
+							break;
+						}
+						else if (top->mType == ASTNode::NodeType::Operator)
+						{
+							ReduceOperator(operandStack, operatorStack, dynamic_cast<OperatorNode*>(top));
+						}
+					}
+				}
+			}
 
-			// TODO: Handle parentheses
-
-			if (lastNodeType != Node::NodeType::Rational)
+			if (lastNodeType != ASTNode::NodeType::Rational)
 			{
 				result = ExtractRational(expression, offset);
 				if (!result.HasError())
 				{
 					operandStack.push_back(new RationalNode(ParseRational(expression, offset, result.mExtractedLength)));
 					offset += result.mExtractedLength;
-					lastNodeType = Node::NodeType::Rational;
+					lastNodeType = ASTNode::NodeType::Rational;
 					continue;
 				}
 			}
@@ -200,7 +232,7 @@ namespace AST
 			{
 				operandStack.push_back(new IrrationalNode(result.mSymbol));
 				offset += result.mExtractedLength;
-				lastNodeType = Node::NodeType::Irrational;
+				lastNodeType = ASTNode::NodeType::Irrational;
 				continue;
 			}
 
@@ -208,22 +240,30 @@ namespace AST
 			if (!result.HasError())
 			{
 				const Operator* op = dynamic_cast<const Operator*>(result.mSymbol);
-				while (!operatorStack.empty()) // TODO: Or closing parenthesis
+				while (!operatorStack.empty())
 				{
-					OperatorNode* operatorNode = dynamic_cast<OperatorNode*>(operatorStack.back());
-					if (operatorNode->mOperator->mPrecedence > op->mPrecedence)
-					{
-						ConstructOperatorTree(operandStack, operatorStack, operatorNode);
-					}
-					else
+					ASTNode* top = operatorStack.back();
+					if (top->mType == ASTNode::NodeType::Parenthesis)
 					{
 						break;
+					}
+					else if (top->mType == ASTNode::NodeType::Operator)
+					{
+						OperatorNode* operatorNode = dynamic_cast<OperatorNode*>(top);
+						if (operatorNode->mOperator->mPrecedence > op->mPrecedence)
+						{
+							ReduceOperator(operandStack, operatorStack, operatorNode);
+						}
+						else
+						{
+							break;
+						}
 					}
 				}
 
 				operatorStack.push_back(new OperatorNode(op));
 				offset += result.mExtractedLength;
-				lastNodeType = Node::NodeType::Operator;
+				lastNodeType = ASTNode::NodeType::Operator;
 				continue;
 			}
 		}
@@ -231,7 +271,7 @@ namespace AST
 		while (!operatorStack.empty())
 		{
 			OperatorNode* operatorNode = dynamic_cast<OperatorNode*>(operatorStack.back());
-			ConstructOperatorTree(operandStack, operatorStack, operatorNode);
+			ReduceOperator(operandStack, operatorStack, operatorNode);
 		}
 
 		if (operandStack.size() != 1)
