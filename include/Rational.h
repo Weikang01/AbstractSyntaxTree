@@ -32,6 +32,7 @@ namespace AST
 		bool operator<(const Rational& other) const;
 
 		static Rational FromString(const std::string& str);
+		std::string ToString() const;
 	};
 
 	Rational operator+(const int value, const Rational& rational);

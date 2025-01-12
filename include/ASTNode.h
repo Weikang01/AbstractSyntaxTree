@@ -34,8 +34,8 @@ namespace AST
 		Rational mValue;
 
 		RationalNode(const Rational& value)
-			: mValue(value), ASTNode(NodeType::Rational) {
-		}
+			: mValue(value), ASTNode(NodeType::Rational)
+		{}
 	};
 
 	struct IrrationalNode : public ASTNode
@@ -43,8 +43,7 @@ namespace AST
 		const Irrational* mIrrational;
 		IrrationalNode(const Symbol* symbol)
 			: mIrrational(dynamic_cast<const Irrational*>(symbol)), ASTNode(NodeType::Irrational)
-		{
-		}
+		{}
 	};
 
 	struct VariableNode : public ASTNode
@@ -52,8 +51,7 @@ namespace AST
 		const Symbol* mVariable;
 		VariableNode(const Symbol* symbol)
 			: mVariable(symbol), ASTNode(NodeType::Variable)
-		{
-		}
+		{}
 	};
 
 	struct OperatorNode : public ASTNode
@@ -63,8 +61,9 @@ namespace AST
 		std::vector<ASTNode*> mOperands;
 		OperatorNode(const Symbol* symbol)
 			: mOperator(dynamic_cast<const Operator*>(symbol)), ASTNode(NodeType::Operator)
-		{
-		}
+		{}
+
+		~OperatorNode();
 	};
 
 	struct ParenthesisNode : public ASTNode
@@ -72,7 +71,6 @@ namespace AST
 		const Parenthesis* mParenthesis;
 		ParenthesisNode(const Symbol* symbol)
 			: mParenthesis(dynamic_cast<const Parenthesis*>(symbol)), ASTNode(NodeType::Parenthesis)
-		{
-		}
+		{}
 	};
 }

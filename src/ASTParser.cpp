@@ -250,7 +250,7 @@ namespace AST
 					else if (top->mType == ASTNode::NodeType::Operator)
 					{
 						OperatorNode* operatorNode = dynamic_cast<OperatorNode*>(top);
-						if (operatorNode->mOperator->mPrecedence > op->mPrecedence)
+						if (operatorNode->mOperator->mPrecedence >= op->mPrecedence)
 						{
 							ReduceOperator(operandStack, operatorStack, operatorNode);
 						}

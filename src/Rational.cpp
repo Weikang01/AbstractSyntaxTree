@@ -151,6 +151,17 @@ namespace AST
 		return Rational(num, denom);
 	}
 
+	std::string Rational::ToString() const
+	{
+		std::ostringstream oss;
+		oss << mNumerator;
+		if (mDenominator != 1)
+		{
+			oss << "/" << mDenominator;
+		}
+		return oss.str();
+	}
+
 	Rational operator+(const int value, const Rational& rational)
 	{
 		return Rational(value) + rational;

@@ -1,5 +1,6 @@
 #include "Rational.h"
 #include "ASTParser.h"
+#include "ASTNodeTreeViewer.h"
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
@@ -145,6 +146,15 @@ public:
 	{
 		return mParser.ExtractRational(expression);
 	}
+
+	static OperatorNode* CreateOperatorNode(const std::string& symbol, std::vector<ASTNode*> operands)
+	{
+		Symbol* symbolPtr = new Symbol(symbol);
+		OperatorNode* node = new OperatorNode(symbolPtr);
+		node->mOperator = new Operator(OperatorType::FunctionMultiple, Associativity::LeftToRight, 0, symbol);
+		node->mOperands = operands;
+		return node;
+	}
 };
 
 TEST_CASE("ParserTest", "[ParserTest]")
@@ -226,9 +236,66 @@ TEST_CASE("ParserTest", "[ParserTest]")
 		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidOperator);
 	}
 
-	SECTION("Parse")
+	//SECTION("Parse")
+	//{
+	//	ASTNode* node = parserTest.mParser.Parse("-1+1");
+	//	ASTNodeTreeViewer::PrintTree(node);
+	//}
+
+	SECTION("ASTNodeTreeViewer")
 	{
-		ASTNode* node = parserTest.mParser.Parse("-1+1");
+		OperatorNode* testOp1 = ParserTest::CreateOperatorNode("11111111111111111111111111111111111111111111111111111", {});
+		OperatorNode* testOp2 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp3 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp4 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp5 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp6 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp7 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp8 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp9 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp10 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp11 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp12 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp13 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp14 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp15 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp16 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp17 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp18 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp19 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp20 = ParserTest::CreateOperatorNode("1", {});
+		OperatorNode* testOp21 = ParserTest::CreateOperatorNode("1", {});
+
+		testOp1->mOperands.push_back(testOp2);
+		testOp1->mOperands.push_back(testOp3);
+		testOp1->mOperands.push_back(testOp4);
+		testOp1->mOperands.push_back(testOp5);
+
+		testOp2->mOperands.push_back(testOp6);
+		testOp2->mOperands.push_back(testOp7);
+
+		testOp3->mOperands.push_back(testOp8);
+
+		testOp4->mOperands.push_back(testOp9);
+		testOp4->mOperands.push_back(testOp10);
+		testOp4->mOperands.push_back(testOp11);
+		testOp4->mOperands.push_back(testOp12);
+		testOp4->mOperands.push_back(testOp21);
+
+		testOp5->mOperands.push_back(testOp13);
+		testOp5->mOperands.push_back(testOp14);
+		testOp5->mOperands.push_back(testOp15);
+
+		testOp6->mOperands.push_back(testOp16);
+		testOp6->mOperands.push_back(testOp17);
+
+		testOp7->mOperands.push_back(testOp18);
+		testOp7->mOperands.push_back(testOp19);
+
+		testOp8->mOperands.push_back(testOp20);
+
+
+		ASTNodeTreeViewer::PrintTree(testOp1);
 	}
 }
 
