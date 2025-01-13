@@ -244,7 +244,7 @@ TEST_CASE("ParserTest", "[ParserTest]")
 
 	SECTION("ASTNodeTreeViewer")
 	{
-		OperatorNode* testOp1 = ParserTest::CreateOperatorNode("11111111111111111111111111111111111111111111111111111", {});
+		OperatorNode* testOp1 = ParserTest::CreateOperatorNode("111111111111111111111111111111111111111111111111111111111111111", {});
 		OperatorNode* testOp2 = ParserTest::CreateOperatorNode("1", {});
 		OperatorNode* testOp3 = ParserTest::CreateOperatorNode("1", {});
 		OperatorNode* testOp4 = ParserTest::CreateOperatorNode("1", {});

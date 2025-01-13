@@ -298,17 +298,16 @@ namespace AST
 					{
 						leftNodeClosestLine++;
 						if (leftNodeClosestLine > rightNodeClosestLine ||
-							(leftNodeClosestLine == rightNodeClosestLine && pivotOffsets[pivotOffsets.size() - 1] - pivotOffsets[rightNodeClosestLine] == 1))
+							(leftNodeClosestLine == rightNodeClosestLine && pivotOffsets[pivotOffsets.size() - 1] - pivotOffsets[rightNodeClosestLine] == 0))
 						{
 							leftNodeClosestLine = operatorNode->mOperands.size() - 1;
-							rightNodeClosestLine = 0;
 						}
 					}
 					pivotOffsets[j]++;
 				}
 				else if (j == operatorNode->mOperands.size() - 1)
 				{
-					int32_t isNotLeftNode = j != leftNodeClosestLine;
+					int32_t isNotLeftNode = j != leftNodeClosestLine && rightNodeClosestLine != 0;
 					size_t spaceToFill = static_cast<int32_t>(pivotOffsets[j] - pivotOffsets[rightNodeClosestLine] - isNotLeftNode);
 					outNodeTreeInfo.mLines[i] += std::string(spaceToFill, ' ') + "\\";
 					if (pivotOffsets[j] - pivotOffsets[rightNodeClosestLine] <= 1)
@@ -321,11 +320,11 @@ namespace AST
 					}
 					pivotOffsets[j]--;
 				}
-				else if (j == leftNodeClosestLine)
+				else if (j == leftNodeClosestLine && leftNodeClosestLine <= rightNodeClosestLine)
 				{
 					outNodeTreeInfo.mLines[i] += std::string(pivotOffsets[j] - pivotOffsets[0], ' ') + "|";
 				}
-				else if (leftNodeClosestLine < j && rightNodeClosestLine >= j) // j already not leftNodeClosestLine, thus j - 1 definitely exists
+				else if (j >= leftNodeClosestLine && j <= rightNodeClosestLine) // j already not leftNodeClosestLine, thus j - 1 definitely exists
 				{
 					outNodeTreeInfo.mLines[i] += std::string(pivotOffsets[j] - pivotOffsets[j - 1] - 1, ' ') + "|";
 				}
