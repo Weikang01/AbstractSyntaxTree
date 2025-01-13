@@ -64,6 +64,20 @@ namespace AST
 		return static_cast<int32_t>(mWidth) - GetRightPivot() - 1; // -1 to account for the line character
 	}
 
+	std::string ASTNodeTreeViewer::NodeTreeInfo::ToString() const
+	{
+		std::string result;
+		for (size_t i = 0; i < mLines.size(); i++)
+		{
+			result += std::string(mLineContentBeginOffset[i], ' ') + mLines[i];
+			if (i < mLines.size() - 1) // Add newline only if it's not the last line
+			{
+				result += "\n";
+			}
+		}
+		return result;
+	}
+
 	void ASTNodeTreeViewer::UpdateLeafNodeTreeInfo(ASTNodeTreeViewer::NodeTreeInfo& outNodeTreeInfo, const std::string& symbol)
 	{
 		size_t symbolSize = symbol.size();
@@ -189,7 +203,7 @@ namespace AST
 				firstLineInterval.push_back(leftNodeLastLineRemainingSpace + rightNodeOffset);
 				size_t minInterLineOffset = firstLineInterval[i - 1];
 
-				size_t prevNodeIndex = i - 1;
+				int32_t prevNodeIndex = i - 1;
 				size_t curLineIndex = 1;
 				size_t inBetweenWidth = 0;
 
@@ -385,12 +399,12 @@ namespace AST
 		}
 	}
 
-	void ASTNodeTreeViewer::PrintTree(const ASTNode* node)
+	std::string ASTNodeTreeViewer::PrintTree(const ASTNode* node)
 	{
 		NodeTreeInfo nodeTreeInfo = {};
 		PrintTreeInternal(node, nodeTreeInfo);
 
-		std::cout << nodeTreeInfo;
+		return nodeTreeInfo.ToString();
 	}
 
 	std::ostream& operator<<(std::ostream& os, const ASTNodeTreeViewer::NodeTreeInfo& nodeTreeInfo)

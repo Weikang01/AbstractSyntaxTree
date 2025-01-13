@@ -23,6 +23,8 @@ namespace AST
 			int32_t GetLeftPivotRemainingSpace() const;
 			int32_t GetMiddlePivotRemainingSpace() const;
 			int32_t GetRightPivotRemainingSpace() const;
+
+			std::string ToString() const;
 		};
 
 	private:
@@ -33,7 +35,7 @@ namespace AST
 		static void PrintTreeInternal(const ASTNode* node, NodeTreeInfo& outNodeTreeInfo);
 
 	public:
-		static void PrintTree(const ASTNode* node);
+		static std::string PrintTree(const ASTNode* node);
 	};
 
 	std::ostream& operator<<(std::ostream& os, const ASTNodeTreeViewer::NodeTreeInfo& nodeTreeInfo);

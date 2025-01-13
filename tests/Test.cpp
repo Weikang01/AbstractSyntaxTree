@@ -236,11 +236,12 @@ TEST_CASE("ParserTest", "[ParserTest]")
 		REQUIRE(result.mErrorType == ASTParser::ResultType::InvalidOperator);
 	}
 
-	//SECTION("Parse")
-	//{
-	//	ASTNode* node = parserTest.mParser.Parse("-1+1");
-	//	ASTNodeTreeViewer::PrintTree(node);
-	//}
+	SECTION("Parse")
+	{
+		ASTNode* node = parserTest.mParser.Parse("-1+1*1");
+		std::string out = ASTNodeTreeViewer::PrintTree(node);
+		std::cout << out << std::endl;
+	}
 
 	SECTION("ASTNodeTreeViewer")
 	{
@@ -295,7 +296,19 @@ TEST_CASE("ParserTest", "[ParserTest]")
 		testOp8->mOperands.push_back(testOp20);
 
 
-		ASTNodeTreeViewer::PrintTree(testOp1);
+		std::string treeStr = ASTNodeTreeViewer::PrintTree(testOp1);
+		// compare the output with the expected output
+		REQUIRE(treeStr == 
+			"        111111111111111111111111111111111111111111111111111111111111111\n"
+			"       /                    |                     |                    \\\n"
+			"      1                     1                     1                     1\n"
+			"     / \\                   /                     /|\\                   /|\\\n"
+			"    /   \\                 1                     / | \\                 / | \\\n"
+			"   /     \\               /                     /  |  \\               1  1  1\n"
+			"  1       1             1                     /|  |  |\\\n"
+			" / \\     / \\                                 / |  |  | \\\n"
+			"1   1   1   1                               1  1  1  1  1"
+		);
 	}
 }
 
