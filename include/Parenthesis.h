@@ -13,6 +13,8 @@ namespace AST
 		{}
 
 		virtual ~Parenthesis() = default;
+
+		bool IsOpposite(const Parenthesis* other) const;
 	};
 
 	class ParenthesisRegistry : public SymbolRegistry

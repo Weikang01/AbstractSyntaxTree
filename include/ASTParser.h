@@ -31,6 +31,7 @@ namespace AST
 		OperatorRegistry mOperatorRegistry;
 		IrrationalRegistry mIrrationalRegistry;
 		ParenthesisRegistry mParenthesisRegistry;
+		bool mMatchExactParenthesis = true;
 
 		struct ParseResult
 		{
@@ -105,8 +106,12 @@ namespace AST
 
 	public:
 		ASTParser(const OperatorRegistry& operatorRegistry = OperatorRegistry::GetDefaultRegistry(),
-			const IrrationalRegistry& irrationalRegistry = IrrationalRegistry::GetDefaultRegistry())
-			: mOperatorRegistry(operatorRegistry), mIrrationalRegistry(irrationalRegistry)
+			const IrrationalRegistry& irrationalRegistry = IrrationalRegistry::GetDefaultRegistry(),
+			const ParenthesisRegistry& parenthesisRegistry = ParenthesisRegistry::GetDefaultRegistry())
+			:
+			mOperatorRegistry(operatorRegistry),
+			mIrrationalRegistry(irrationalRegistry),
+			mParenthesisRegistry(parenthesisRegistry)
 		{}
 		ASTParser(ASTParser&&) = default;
 		ASTParser(const ASTParser&) = default;

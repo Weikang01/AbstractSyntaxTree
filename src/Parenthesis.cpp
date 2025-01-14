@@ -2,6 +2,11 @@
 
 namespace AST
 {
+	bool Parenthesis::IsOpposite(const Parenthesis* other) const
+	{
+		return mOpposite && mOpposite->mSymbol == other->mSymbol;
+	}
+
 	static void RegisterParenthesisPairs(ParenthesisRegistry& registry, const Parenthesis* left, const Parenthesis* right)
 	{
 		registry.RegisterSymbol(std::make_shared<Parenthesis>(left->mSymbol, true, const_cast<Parenthesis*>(right)));

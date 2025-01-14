@@ -238,7 +238,7 @@ TEST_CASE("ParserTest", "[ParserTest]")
 
 	SECTION("Parse")
 	{
-		ASTNode* node = parserTest.mParser.Parse("-1+1*1");
+		ASTNode* node = parserTest.mParser.Parse("(-1+1)*1+(5/5)");
 		std::string out = ASTNodeTreeViewer::PrintTree(node);
 		std::cout << out << std::endl;
 	}

@@ -189,23 +189,36 @@ namespace AST
 			if (!result.HasError())
 			{
 				ParenthesisNode* parenthesisNode = new ParenthesisNode(result.mSymbol);
+				offset += result.mExtractedLength;
+
 				if (parenthesisNode->mParenthesis->mIsOpen)
 				{
 					operatorStack.push_back(parenthesisNode);
-					offset += result.mExtractedLength;
 					lastNodeType = ASTNode::NodeType::Parenthesis;
 					continue;
 				}
-				else
+				else // closing parenthesis
 				{
-					// TODO: Handle closing parenthesis
 					while (!operatorStack.empty())
 					{
 						ASTNode* top = operatorStack.back();
 						if (top->mType == ASTNode::NodeType::Parenthesis)
 						{
-							operatorStack.pop_back();
-							break;
+							ParenthesisNode* topParenthesisNode = dynamic_cast<ParenthesisNode*>(top);
+							
+							if ((!mMatchExactParenthesis &&
+								!topParenthesisNode->mParenthesis->mIsOpen) ||
+								(mMatchExactParenthesis &&
+									topParenthesisNode->mParenthesis->IsOpposite(parenthesisNode->mParenthesis)))
+							{
+								operatorStack.pop_back();
+								break;
+							}
+							else
+							{
+								// TODO: Handle mismatched parenthesis, report error
+								return nullptr;
+							}
 						}
 						else if (top->mType == ASTNode::NodeType::Operator)
 						{
