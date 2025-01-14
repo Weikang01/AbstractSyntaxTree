@@ -203,7 +203,7 @@ namespace AST
 				firstLineInterval.push_back(leftNodeLastLineRemainingSpace + rightNodeOffset);
 				size_t minInterLineOffset = firstLineInterval[i - 1];
 
-				int32_t prevNodeIndex = i - 1;
+				int32_t prevNodeIndex = static_cast<int32_t>(i) - 1;
 				size_t curLineIndex = 1;
 				size_t inBetweenWidth = 0;
 

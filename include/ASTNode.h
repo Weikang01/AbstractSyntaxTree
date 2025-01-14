@@ -27,6 +27,8 @@ namespace AST
 		ASTNode(const NodeType type) : mType(type) {}
 
 		virtual ~ASTNode() = default;
+
+
 	};
 
 	struct RationalNode : public ASTNode
