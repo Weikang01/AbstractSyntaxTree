@@ -192,4 +192,18 @@ namespace AST
 		return os;
 	}
 
+	Rational::operator int() const
+	{
+		return mNumerator / mDenominator;
+	}
+
+	Rational::operator float() const
+	{
+		return static_cast<float>(mNumerator) / mDenominator;
+	}
+
+	Rational::operator double() const
+	{
+		return static_cast<double>(mNumerator) / mDenominator;
+	}
 } // namespace LAR

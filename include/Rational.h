@@ -33,6 +33,10 @@ namespace AST
 
 		static Rational FromString(const std::string& str);
 		std::string ToString() const;
+
+		explicit operator int() const;
+		explicit operator float() const;
+		explicit operator double() const;
 	};
 
 	Rational operator+(const int value, const Rational& rational);
