@@ -9,6 +9,12 @@
 
 namespace AST
 {
+	enum class SimplifyLevel : uint8_t
+	{
+		RationalOnly,
+		RationalAndIrrational,
+	};
+
 	struct ASTNode
 	{
 	public:
@@ -27,8 +33,6 @@ namespace AST
 		ASTNode(const NodeType type) : mType(type) {}
 
 		virtual ~ASTNode() = default;
-
-
 	};
 
 	struct RationalNode : public ASTNode
