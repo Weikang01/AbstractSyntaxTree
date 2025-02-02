@@ -120,7 +120,7 @@ namespace AST
 			// add the operator symbol to the line
 			outNodeTreeInfo.mLines.push_back(operatorNode->mOperator->mSymbol);
 			outNodeTreeInfo.mLineContentBeginOffset.push_back(childNodeTreeInfo.GetLeftPivot() + 1);
-			
+
 			// add a line to connect the operator symbol and the child node
 			outNodeTreeInfo.mLines.push_back("/");
 			outNodeTreeInfo.mLineContentBeginOffset.push_back(childNodeTreeInfo.GetLeftPivot());
@@ -220,7 +220,18 @@ namespace AST
 					prevNodeIndex--;
 				}
 
-				lineOffsetAdjustions.push_back(static_cast<int32_t>(kMinItemDistance) - static_cast<int32_t>(minInterLineOffset));
+				int32_t proposedAdjustion = static_cast<int32_t>(kMinItemDistance) - static_cast<int32_t>(minInterLineOffset);
+
+				// left-shift must be less than the width of the total content of the left node, otherwise the index will be negative
+				if (proposedAdjustion < 0 && -proposedAdjustion > accumulativeWidth)
+				{
+					lineOffsetAdjustions.push_back(-static_cast<int32_t>(accumulativeWidth));
+				}
+				else
+				{
+					lineOffsetAdjustions.push_back(proposedAdjustion);
+				}
+
 				firstLineInterval[i - 1] = firstLineInterval[i - 1] + lineOffsetAdjustions[i - 1];
 				maxFirstLineInterval = std::max(maxFirstLineInterval, firstLineInterval[i - 1]);
 
@@ -257,7 +268,7 @@ namespace AST
 			{
 				lineOffsetAdjustions[i] += static_cast<int32_t>(additionalSpaceDivided);
 				pivotOffsets[i + 1] += additionalSpaceDivided * (i + 1);
- 				if (i < additionalSpaceRemainder)
+				if (i < additionalSpaceRemainder)
 				{
 					lineOffsetAdjustions[i] += 1;
 

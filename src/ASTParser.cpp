@@ -1,5 +1,4 @@
 #include "ASTParser.h"
-#include "ASTNode.h"
 
 namespace AST
 {
@@ -68,13 +67,13 @@ namespace AST
 		return Rational::FromString(numberStr);
 	}
 
-	ASTParser::ParseResult ASTParser::ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const size_t& offset)
+	ASTParser::ParseResult ASTParser::ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const std::function<bool(const std::shared_ptr<Symbol>&)>& findFirstMatch, const size_t& offset)
 	{
 		if (expression.empty())
 		{
 			return ParseResult(0, ResultType::EmptyExpression);
 		}
-		
+
 		std::shared_ptr<SymbolSearchNode> node = symbolRegistry.GetRoot();
 		std::shared_ptr<Symbol> longestMatchSymbol = nullptr;
 		size_t extractedLength = 0;
@@ -92,9 +91,9 @@ namespace AST
 				break;
 			}
 			node = node->mChildren[c];
-			if (node->mSymbol)
+			if (node->mSymbols.size())
 			{
-				longestMatchSymbol = node->mSymbol;
+				longestMatchSymbol = node->FindFirstMatch(findFirstMatch);
 				extractedLength = searchLength + 1;
 			}
 			++searchLength;
@@ -110,25 +109,36 @@ namespace AST
 		}
 	}
 
-	ASTParser::ParseResult ASTParser::ExtractOperator(const std::string& expression, const size_t& offset)
+	ASTParser::ParseResult ASTParser::ExtractOperator(const std::string& expression, const ASTNode::NodeType& lastNodeType, const size_t& offset)
 	{
-		return ExtractSymbol(mOperatorRegistry, expression, offset);
+		return ExtractSymbol(mOperatorRegistry, expression, [&](const std::shared_ptr<Symbol>& symbol)
+			{
+				const Operator* op = dynamic_cast<const Operator*>(symbol.get());
+				if (op->mType == OperatorType::Binary && (lastNodeType == ASTNode::NodeType::Operator || lastNodeType == ASTNode::NodeType::Unknown)) {
+					return false;
+				}
+				return true; }, offset);
 	}
 
 	ASTParser::ParseResult ASTParser::ExtractIrrational(const std::string& expression, const size_t& offset)
 	{
-		return ExtractSymbol(mIrrationalRegistry, expression, offset);
+		return ExtractSymbol(mIrrationalRegistry, expression, [&](const std::shared_ptr<Symbol>&) { return true; }, offset);
 	}
 
 	ASTParser::ParseResult ASTParser::ExtractParenthesis(const std::string& expression, const size_t& offset)
 	{
-		return ExtractSymbol(mParenthesisRegistry, expression, offset);
+		return ExtractSymbol(mParenthesisRegistry, expression, [&](const std::shared_ptr<Symbol>&) { return true; }, offset);
 	}
 
 	void ASTParser::ReduceOperator(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, OperatorNode* topOperator)
 	{
 		if (topOperator->mOperator->mType == OperatorType::Binary)
 		{
+			if (operandStack.size() < 2)
+			{
+				throw std::runtime_error("Invalid expression");
+			}
+
 			ASTNode* right = operandStack.back();
 			operandStack.pop_back();
 			ASTNode* left = operandStack.back();
@@ -142,6 +152,11 @@ namespace AST
 		}
 		else if (topOperator->mOperator->mType == OperatorType::Unary)
 		{
+			if (operandStack.empty())
+			{
+				throw std::runtime_error("Invalid expression");
+			}
+
 			ASTNode* operand = operandStack.back();
 			operandStack.pop_back();
 			operatorStack.pop_back();
@@ -205,7 +220,7 @@ namespace AST
 						if (top->mType == ASTNode::NodeType::Parenthesis)
 						{
 							ParenthesisNode* topParenthesisNode = dynamic_cast<ParenthesisNode*>(top);
-							
+
 							if ((!mMatchExactParenthesis &&
 								!topParenthesisNode->mParenthesis->mIsOpen) ||
 								(mMatchExactParenthesis &&
@@ -249,7 +264,7 @@ namespace AST
 				continue;
 			}
 
-			result = ExtractOperator(expression, offset);
+			result = ExtractOperator(expression, lastNodeType, offset);
 			if (!result.HasError())
 			{
 				const Operator* op = dynamic_cast<const Operator*>(result.mSymbol);

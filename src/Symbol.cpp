@@ -13,7 +13,7 @@ namespace AST
 	{
 		if (index == symbol->mSymbol.size())
 		{
-			mSymbol = symbol;
+			mSymbols.push_back(symbol);
 			return;
 		}
 		if (mChildren.find(symbol->mSymbol[index]) == mChildren.end())
@@ -36,7 +36,7 @@ namespace AST
 		}
 		mChildren[symbol[index]]->Remove(symbol, index + 1);
 	}
-	
+
 	void SymbolRegistry::RegisterSymbol(std::shared_ptr<Symbol> symbol)
 	{
 		mRoot->Add(symbol);

@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
+#include <vector>
 #include <map>
+#include <functional>
 
 namespace AST
 {
@@ -13,7 +15,7 @@ namespace AST
 
 	struct SymbolSearchNode
 	{
-		std::shared_ptr<Symbol> mSymbol = nullptr;
+		std::vector<std::shared_ptr<Symbol>> mSymbols = {};
 		std::map<char, std::shared_ptr<SymbolSearchNode>> mChildren = {};
 
 		SymbolSearchNode() = default;
@@ -21,6 +23,19 @@ namespace AST
 
 		void Add(std::shared_ptr<Symbol> symbol, const size_t index = 0);
 		void Remove(const std::string& symbol, const size_t index = 0);
+
+		// Function to find the first matched symbol based on user-defined logic
+		std::shared_ptr<Symbol> FindFirstMatch(const std::function<bool(const std::shared_ptr<Symbol>&)>& predicate) const
+		{
+			for (const auto& symbol : mSymbols)
+			{
+				if (predicate(symbol))
+				{
+					return symbol;
+				}
+			}
+			return nullptr;
+		}
 	};
 
 	class SymbolRegistry

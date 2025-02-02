@@ -6,6 +6,9 @@
 #include "Operator.h"
 #include "Irrational.h"
 #include "Parenthesis.h"
+#include "ASTNode.h"
+
+#include <functional>
 
 namespace AST
 {
@@ -94,9 +97,9 @@ namespace AST
 
 		Rational ParseRational(const std::string& expression, const size_t& offset, const size_t& mExtractedLength);
 
-		ParseResult ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const size_t& offset = 0);
+		ParseResult ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const std::function<bool(const std::shared_ptr<Symbol>&)>& findFirstMatch, const size_t& offset = 0);
 
-		ParseResult ExtractOperator(const std::string& expression, const size_t& offset = 0);
+		ParseResult ExtractOperator(const std::string& expression, const ASTNode::NodeType& lastNodeType, const size_t& offset = 0);
 
 		ParseResult ExtractIrrational(const std::string& expression, const size_t& offset = 0);
 
@@ -112,7 +115,8 @@ namespace AST
 			mOperatorRegistry(operatorRegistry),
 			mIrrationalRegistry(irrationalRegistry),
 			mParenthesisRegistry(parenthesisRegistry)
-		{}
+		{
+		}
 		ASTParser(ASTParser&&) = default;
 		ASTParser(const ASTParser&) = default;
 		ASTParser& operator=(ASTParser&&) = default;
