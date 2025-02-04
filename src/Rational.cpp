@@ -121,6 +121,187 @@ namespace AST
 		return mNumerator * other.mDenominator < other.mNumerator * mDenominator;
 	}
 
+	void Rational::operator++()
+	{
+		*this += 1;
+	}
+
+	void Rational::operator--()
+	{
+		*this -= 1;
+	}
+
+	int Rational::IntegerPower(int base, int exponent)
+	{
+		if (exponent < 0) {
+			throw std::invalid_argument("Exponent must be non-negative in integer power.");
+		}
+		if (base == 0) {
+			return 0;
+		}
+		int result = 1;
+		while (exponent > 0) {
+			if (exponent % 2 == 1) {
+				result *= base;
+			}
+			base *= base;
+			exponent /= 2;
+		}
+		return result;
+	}
+
+	bool Rational::IsPerfectRoot(int number, int rootDegree, int& root)
+	{
+		if (rootDegree <= 0) {
+			return false;
+		}
+		if (rootDegree == 1) {
+			root = number;
+			return true;
+		}
+		if (number == 0) {
+			root = 0;
+			return true;
+		}
+		if (rootDegree % 2 == 0 && number < 0) {
+			return false; // Even root of a negative number is not real
+		}
+		int abs_number = std::abs(number);
+		int low = 1;
+		int high = abs_number;
+		while (low <= high) {
+			int mid = low + (high - low) / 2;
+			int power = 1;
+			bool overflow = false;
+			for (int i = 0; i < rootDegree; ++i) {
+				if (mid != 0 && power > std::numeric_limits<int>::max() / mid) {
+					overflow = true;
+					break;
+				}
+				power *= mid;
+				if (power > abs_number) {
+					overflow = true;
+					break;
+				}
+			}
+			if (overflow) {
+				high = mid - 1;
+			}
+			else if (power == abs_number) {
+				root = mid;
+				if (number < 0) {
+					root = -root;
+				}
+				return true;
+			}
+			else if (power < abs_number) {
+				low = mid + 1;
+			}
+			else {
+				high = mid - 1;
+			}
+		}
+		return false;
+	}
+
+	Rational Rational::Inverse() const
+	{
+		if (mNumerator == 0) {
+			throw std::invalid_argument("Cannot invert zero.");
+		}
+		return Rational(mDenominator, mNumerator);
+	}
+
+	bool Rational::CanYieldRationalPowerResult(const Rational& exponent) const
+	{
+		if (exponent.mNumerator == 0) {
+			return true; // Any number to the power of 0 is 1 (rational)
+		}
+
+		if (mNumerator == 0) {
+			return exponent.mNumerator > 0; // 0^positive is 0 (rational), 0^negative is undefined
+		}
+
+		if (exponent.mDenominator == 1) {
+			return true; // Integer exponent always yields a rational result
+		}
+
+		int root_num;
+		bool numIsPerfect = IsPerfectRoot(mNumerator, exponent.mDenominator, root_num);
+		int root_den;
+		bool denIsPerfect = IsPerfectRoot(mDenominator, exponent.mDenominator, root_den);
+
+		return numIsPerfect && denIsPerfect;
+	}
+
+	Rational Rational::Pow(const Rational& other) const
+	{
+		if (other.mNumerator == 0) {
+			if (mNumerator == 0) {
+				throw std::invalid_argument("Zero to the power of zero is undefined.");
+			}
+			else {
+				return Rational(1);
+			}
+		}
+
+		if (mNumerator == 0) {
+			if (other.mNumerator > 0) {
+				return Rational(0, 1);
+			}
+			else {
+				throw std::invalid_argument("Zero cannot be raised to a negative power.");
+			}
+		}
+
+		if (other.mDenominator == 1) {
+			int exponent = other.mNumerator;
+			bool negative_exponent = false;
+			if (exponent < 0) {
+				negative_exponent = true;
+				exponent = -exponent;
+			}
+			int newNum = IntegerPower(mNumerator, exponent);
+			int newDen = IntegerPower(mDenominator, exponent);
+			if (negative_exponent) {
+				return Rational(newDen, newNum).Inverse();
+			}
+			else {
+				return Rational(newNum, newDen);
+			}
+		}
+
+		int expNumerator = other.mNumerator;
+
+		int rootNum;
+		bool numIsPerfect = IsPerfectRoot(mNumerator, other.mDenominator, rootNum);
+		int rootDen;
+		bool denIsPerfect = IsPerfectRoot(mDenominator, other.mDenominator, rootDen);
+
+		if (!numIsPerfect || !denIsPerfect) {
+			throw std::invalid_argument("Exponent results in irrational number.");
+		}
+
+		if (expNumerator < 0) {
+			std::swap(rootNum, rootDen);
+			expNumerator = -expNumerator;
+		}
+
+		int newNum = IntegerPower(rootNum, expNumerator);
+		int newDen = IntegerPower(rootDen, expNumerator);
+		return Rational(newNum, newDen);
+	}
+
+	bool Rational::CanYieldRationalLogResult(const Rational& base) const
+	{
+		// TODO
+	}
+
+	Rational Rational::Log(const Rational& base) const
+	{
+		// TODO
+	}
+
 	Rational Rational::FromString(const std::string& str)
 	{
 		std::istringstream iss(str);

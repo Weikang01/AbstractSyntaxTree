@@ -10,6 +10,9 @@ namespace AST
 		int mDenominator;
 
 		void Simplify();
+
+		static int IntegerPower(int base, int exponent);
+		static bool IsPerfectRoot(int number, int rootDegree, int& root);
 	public:
 		Rational(int numerator = 0, int denominator = 1);
 
@@ -30,6 +33,16 @@ namespace AST
 		bool operator==(const Rational& other) const;
 		bool operator!=(const Rational& other) const;
 		bool operator<(const Rational& other) const;
+		void operator++();
+		void operator--();
+
+		Rational Inverse() const;
+
+		bool CanYieldRationalPowerResult(const Rational& exponent) const;
+		Rational Pow(const Rational& other) const;
+
+		bool CanYieldRationalLogResult(const Rational& base) const;
+		Rational Log(const Rational& base) const;
 
 		static Rational FromString(const std::string& str);
 		std::string ToString() const;
