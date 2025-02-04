@@ -1,5 +1,6 @@
 #pragma once
 #include "Symbol.h"
+#include "Operation.h"
 
 namespace AST
 {
@@ -23,10 +24,12 @@ namespace AST
 		OperatorType mType;
 		Associativity mAssociativity;
 		uint16_t mPrecedence;
+		OperationId mOperationId = OperationId::Invalid;
 
-		Operator(OperatorType type, Associativity associativity, uint16_t precedence, const std::string& symbol)
-			: Symbol(symbol), mType(type), mAssociativity(associativity), mPrecedence(precedence)
-		{};
+		Operator(OperatorType type, Associativity associativity, uint16_t precedence, const std::string& symbol, const OperationId& operationId)
+			: Symbol(symbol), mType(type), mAssociativity(associativity), mPrecedence(precedence), mOperationId(operationId)
+		{
+		};
 
 		virtual ~Operator() = default;
 	};
