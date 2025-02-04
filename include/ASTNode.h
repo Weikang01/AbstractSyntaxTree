@@ -9,12 +9,6 @@
 
 namespace AST
 {
-	enum class SimplifyLevel : uint8_t
-	{
-		RationalOnly,
-		RationalAndIrrational,
-	};
-
 	struct ASTNode
 	{
 	public:
@@ -33,6 +27,8 @@ namespace AST
 		ASTNode(const NodeType type) : mType(type) {}
 
 		virtual ~ASTNode() = default;
+
+		virtual ASTNode* clone() const = 0;
 	};
 
 	struct RationalNode : public ASTNode
@@ -41,7 +37,14 @@ namespace AST
 
 		RationalNode(const Rational& value)
 			: mValue(value), ASTNode(NodeType::Rational)
-		{}
+		{
+		}
+
+		virtual ASTNode* clone() const override
+		{
+			return new RationalNode(mValue);
+		}
+
 	};
 
 	struct IrrationalNode : public ASTNode
@@ -49,7 +52,13 @@ namespace AST
 		const Irrational* mIrrational;
 		IrrationalNode(const Symbol* symbol)
 			: mIrrational(dynamic_cast<const Irrational*>(symbol)), ASTNode(NodeType::Irrational)
-		{}
+		{
+		}
+
+		virtual ASTNode* clone() const override
+		{
+			return new IrrationalNode(mIrrational);
+		}
 	};
 
 	struct VariableNode : public ASTNode
@@ -57,7 +66,13 @@ namespace AST
 		const Symbol* mVariable;
 		VariableNode(const Symbol* symbol)
 			: mVariable(symbol), ASTNode(NodeType::Variable)
-		{}
+		{
+		}
+
+		virtual ASTNode* clone() const override
+		{
+			return new VariableNode(mVariable);
+		}
 	};
 
 	struct OperatorNode : public ASTNode
@@ -67,9 +82,20 @@ namespace AST
 		std::vector<ASTNode*> mOperands;
 		OperatorNode(const Symbol* symbol)
 			: mOperator(dynamic_cast<const Operator*>(symbol)), ASTNode(NodeType::Operator)
-		{}
+		{
+		}
 
 		~OperatorNode();
+
+		virtual ASTNode* clone() const override
+		{
+			OperatorNode* node = new OperatorNode(mOperator);
+			for (auto& operand : mOperands)
+			{
+				node->mOperands.push_back(operand->clone());
+			}
+			return node;
+		}
 	};
 
 	struct ParenthesisNode : public ASTNode
@@ -77,6 +103,12 @@ namespace AST
 		const Parenthesis* mParenthesis;
 		ParenthesisNode(const Symbol* symbol)
 			: mParenthesis(dynamic_cast<const Parenthesis*>(symbol)), ASTNode(NodeType::Parenthesis)
-		{}
+		{
+		}
+
+		virtual ASTNode* clone() const override
+		{
+			return new ParenthesisNode(mParenthesis);
+		}
 	};
 }
