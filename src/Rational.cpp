@@ -292,15 +292,15 @@ namespace AST
 		return Rational(newNum, newDen);
 	}
 
-	bool Rational::CanYieldRationalLogResult(const Rational& base) const
-	{
-		// TODO
-	}
+	//bool Rational::CanYieldRationalLogResult(const Rational& base) const
+	//{
+	//	// TODO
+	//}
 
-	Rational Rational::Log(const Rational& base) const
-	{
-		// TODO
-	}
+	//Rational Rational::Log(const Rational& base) const
+	//{
+	//	// TODO
+	//}
 
 	Rational Rational::FromString(const std::string& str)
 	{

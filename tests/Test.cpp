@@ -87,6 +87,21 @@ namespace AST
 			REQUIRE(r5.GetNumerator() == 18);
 			REQUIRE(r5.GetDenominator() == 1);
 		}
+		SECTION("OperationWithInt")
+		{
+			Rational r5 = r1 + 3;
+			REQUIRE(r5.GetNumerator() == 15);
+			REQUIRE(r5.GetDenominator() == 1);
+			r5 = r1 - 3;
+			REQUIRE(r5.GetNumerator() == 9);
+			REQUIRE(r5.GetDenominator() == 1);
+			r5 = r1 * 3;
+			REQUIRE(r5.GetNumerator() == 36);
+			REQUIRE(r5.GetDenominator() == 1);
+			r5 = r1 / 3;
+			REQUIRE(r5.GetNumerator() == 4);
+			REQUIRE(r5.GetDenominator() == 1);
+		}
 	}
 
 	TEST_CASE("RationalComparisonTest", "[RationalComparisonTest]")
@@ -151,7 +166,7 @@ namespace AST
 		{
 			Symbol* symbolPtr = new Symbol(symbol);
 			OperatorNode* node = new OperatorNode(symbolPtr);
-			node->mOperator = new Operator(OperatorType::FunctionMultiple, Associativity::LeftToRight, 0, symbol);
+			node->mOperator = new Operator(OperatorType::FunctionMultiple, Associativity::LeftToRight, 0, symbol, OperationId::Invalid);
 			node->mOperands = operands;
 			return node;
 		}

@@ -28,7 +28,7 @@ namespace AST
 
 		virtual ~ASTNode() = default;
 
-		virtual ASTNode* clone() const = 0;
+		virtual ASTNode* Clone() const = 0;
 	};
 
 	struct RationalNode : public ASTNode
@@ -40,7 +40,7 @@ namespace AST
 		{
 		}
 
-		virtual ASTNode* clone() const override
+		virtual ASTNode* Clone() const override
 		{
 			return new RationalNode(mValue);
 		}
@@ -55,7 +55,7 @@ namespace AST
 		{
 		}
 
-		virtual ASTNode* clone() const override
+		virtual ASTNode* Clone() const override
 		{
 			return new IrrationalNode(mIrrational);
 		}
@@ -69,7 +69,7 @@ namespace AST
 		{
 		}
 
-		virtual ASTNode* clone() const override
+		virtual ASTNode* Clone() const override
 		{
 			return new VariableNode(mVariable);
 		}
@@ -87,12 +87,12 @@ namespace AST
 
 		~OperatorNode();
 
-		virtual ASTNode* clone() const override
+		virtual ASTNode* Clone() const override
 		{
 			OperatorNode* node = new OperatorNode(mOperator);
 			for (auto& operand : mOperands)
 			{
-				node->mOperands.push_back(operand->clone());
+				node->mOperands.push_back(operand->Clone());
 			}
 			return node;
 		}
@@ -106,7 +106,7 @@ namespace AST
 		{
 		}
 
-		virtual ASTNode* clone() const override
+		virtual ASTNode* Clone() const override
 		{
 			return new ParenthesisNode(mParenthesis);
 		}
