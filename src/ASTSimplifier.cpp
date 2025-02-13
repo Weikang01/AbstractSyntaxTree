@@ -313,7 +313,7 @@ namespace AST
 		mRules.insert(it, rule);
 	}
 
-	void ASTSimplifier::BindSimplifyRule(const OperationId operation, const IOperationSimplifyRule* rule)
+	void ASTSimplifier::BindSimplifyRule(const OperationId operation, const OperationSimplifyRule* rule)
 	{
 		mSimplifyRules[operation] = rule;
 	}
@@ -331,7 +331,7 @@ namespace AST
 			auto ruleIt = mSimplifyRules.find(opNode->mOperator->mOperationId);
 			if (ruleIt != mSimplifyRules.end())
 			{
-				return ruleIt->second->Simplify(newOperands);
+				return ruleIt->second->Simplify(newOperands).mResult;
 			}
 			else
 			{
@@ -344,5 +344,21 @@ namespace AST
 		}
 
 		return nullptr; // temp
+	}
+	const ASTSimplifier& ASTSimplifier::GetDefault()
+	{
+		static ASTSimplifier instance;
+		return instance;
+	}
+	SimplifyResult OperationSimplifyRule::Simplify(const std::vector<ASTNode*> operands) const
+	{
+		for (auto rule : mRules)
+		{
+			if (rule->Check(operands))
+			{
+				return rule->Simplify(operands);
+			}
+		}
+		return { false, nullptr };
 	}
 }
