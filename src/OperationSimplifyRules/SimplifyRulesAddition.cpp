@@ -42,7 +42,8 @@ namespace AST
 			{
 				if (operand->mType != ASTNode::NodeType::Rational)
 				{
-					return false;
+					++nonZeroOperands;
+					continue;
 				}
 				RationalNode* rationalNode = dynamic_cast<RationalNode*>(operand);
 				if (rationalNode->mValue != 0)
@@ -59,6 +60,11 @@ namespace AST
 		{
 			for (auto& operand : operands)
 			{
+				if (operand->mType != ASTNode::NodeType::Rational)
+				{
+					return { true, operand->Clone() };
+				}
+
 				RationalNode* rationalNode = dynamic_cast<RationalNode*>(operand);
 				if (rationalNode->mValue != 0)
 				{
