@@ -132,8 +132,15 @@ namespace AST
 
 	ASTParser::ParseResult ASTParser::ExtractUnknownVariable(const std::string& expression, const size_t& offset)
 	{
-		Symbol* symbol = new Symbol(expression.substr(offset, 1));
-		return ParseResult(1, symbol);
+		if (expression.size() > offset)
+		{
+			Symbol* symbol = new Symbol(expression.substr(offset, 1));
+			return ParseResult(1, symbol);
+		}
+		else
+		{
+			return ParseResult(0, ResultType::InvalidExpression);
+		}
 	}
 
 	void ASTParser::ReduceOperator(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, OperatorNode* topOperator)

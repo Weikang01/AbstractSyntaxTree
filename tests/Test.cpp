@@ -257,11 +257,13 @@ namespace AST
 			ASTNode* node = parserTest.mParser.Parse("3--sinpi");
 			std::string out = ASTNodeTreeViewer::PrintTree(node);
 			std::cout << out << std::endl;
+		}
 
-			node = parserTest.mParser.Parse("3+x");
-			out = ASTNodeTreeViewer::PrintTree(node);
+		SECTION("Parse2")
+		{
+			ASTNode* node = parserTest.mParser.Parse("0+sin(x)");
+			std::string out = ASTNodeTreeViewer::PrintTree(node);
 			std::cout << out << std::endl;
-
 		}
 
 		SECTION("ASTNodeTreeViewer")
@@ -340,7 +342,7 @@ namespace AST
 		ParserTest parserTest;
 		SECTION("Simplify")
 		{
-			ASTNode* node = parserTest.mParser.Parse("3+4+5");
+			ASTNode* node = parserTest.mParser.Parse("0+x");
 			const ASTSimplifier& simplifier = ASTSimplifier::GetDefault();
 			ASTNode* simplifiedNode = simplifier.Simplify(node);
 			std::string out = ASTNodeTreeViewer::PrintTree(simplifiedNode);
