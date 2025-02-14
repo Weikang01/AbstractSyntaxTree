@@ -96,6 +96,16 @@ namespace AST
 			}
 			return node;
 		}
+
+		virtual ASTNode* CloneWithNewOperands(const std::vector<ASTNode*>& operands) const
+		{
+			OperatorNode* node = new OperatorNode(mOperator);
+			for (auto& operand : operands)
+			{
+				node->mOperands.push_back(operand->Clone());
+			}
+			return node;
+		}
 	};
 
 	struct ParenthesisNode : public ASTNode

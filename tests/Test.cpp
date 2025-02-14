@@ -1,6 +1,7 @@
 #include "Rational.h"
 #include "ASTParser.h"
 #include "ASTNodeTreeViewer.h"
+#include "ASTSimplifier.h"
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
@@ -327,6 +328,20 @@ namespace AST
 
 			std::cout << treeStr << std::endl;
 		}
+	}
+
+	TEST_CASE("SimplifierTest", "[SimplifierTest]")
+	{
+		ParserTest parserTest;
+		SECTION("Simplify")
+		{
+			ASTNode* node = parserTest.mParser.Parse("3+4+5");
+			const ASTSimplifier& simplifier = ASTSimplifier::GetDefault();
+			ASTNode* simplifiedNode = simplifier.Simplify(node);
+			std::string out = ASTNodeTreeViewer::PrintTree(simplifiedNode);
+			std::cout << out << std::endl;
+		}
+
 	}
 
 }

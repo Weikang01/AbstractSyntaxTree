@@ -1,4 +1,4 @@
-#include "OperationSimplifyRules/Addition.h"
+#include "OperationSimplifyRules/SimplifyRulesAddition.h"
 #include "ASTNode.h"
 
 namespace AST

@@ -1,4 +1,5 @@
 #include "ASTSimplifier.h"
+#include "OperationSimplifyRules/SimplifyRulesAddition.h"
 #include "ASTNode.h"
 
 namespace AST
@@ -335,7 +336,7 @@ namespace AST
 			}
 			else
 			{
-				return node->Clone();
+				return opNode->CloneWithNewOperands(newOperands);
 			}
 		}
 		else
@@ -345,11 +346,16 @@ namespace AST
 
 		return nullptr; // temp
 	}
+
 	const ASTSimplifier& ASTSimplifier::GetDefault()
 	{
 		static ASTSimplifier instance;
+
+		instance.BindSimplifyRule(OperationId::Addition, new AdditionSimplifyRule());
+
 		return instance;
 	}
+
 	SimplifyResult OperationSimplifyRule::Simplify(const std::vector<ASTNode*> operands) const
 	{
 		for (auto rule : mRules)
