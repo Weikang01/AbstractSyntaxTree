@@ -257,6 +257,11 @@ namespace AST
 			ASTNode* node = parserTest.mParser.Parse("3--sinpi");
 			std::string out = ASTNodeTreeViewer::PrintTree(node);
 			std::cout << out << std::endl;
+
+			node = parserTest.mParser.Parse("3+x");
+			out = ASTNodeTreeViewer::PrintTree(node);
+			std::cout << out << std::endl;
+
 		}
 
 		SECTION("ASTNodeTreeViewer")

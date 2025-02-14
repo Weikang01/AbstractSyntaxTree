@@ -130,6 +130,12 @@ namespace AST
 		return ExtractSymbol(mParenthesisRegistry, expression, [&](const std::shared_ptr<Symbol>&) { return true; }, offset);
 	}
 
+	ASTParser::ParseResult ASTParser::ExtractUnknownVariable(const std::string& expression, const size_t& offset)
+	{
+		Symbol* symbol = new Symbol(expression.substr(offset, 1));
+		return ParseResult(1, symbol);
+	}
+
 	void ASTParser::ReduceOperator(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, OperatorNode* topOperator)
 	{
 		if (topOperator->mOperator->mType == OperatorType::Binary)
@@ -292,6 +298,16 @@ namespace AST
 				operatorStack.push_back(new OperatorNode(op));
 				offset += result.mExtractedLength;
 				lastNodeType = ASTNode::NodeType::Operator;
+				continue;
+			}
+
+			// Unknown character fallback
+			result = ExtractUnknownVariable(expression, offset);
+			if (!result.HasError())
+			{
+				operandStack.push_back(new VariableNode(result.mSymbol));
+				offset += result.mExtractedLength;
+				lastNodeType = ASTNode::NodeType::Variable;
 				continue;
 			}
 		}

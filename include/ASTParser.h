@@ -105,6 +105,8 @@ namespace AST
 
 		ParseResult ExtractParenthesis(const std::string& expression, const size_t& offset = 0);
 
+		ParseResult ExtractUnknownVariable(const std::string& expression, const size_t& offset = 0);
+
 		void ReduceOperator(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, OperatorNode* topOperator = nullptr);
 
 	public:
