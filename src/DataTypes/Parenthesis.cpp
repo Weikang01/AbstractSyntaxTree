@@ -1,4 +1,4 @@
-#include "Parenthesis.h"
+#include "DataTypes/Parenthesis.h"
 
 namespace AST
 {
@@ -20,7 +20,7 @@ namespace AST
 		RegisterParenthesisPairs(defaultRegistry, new Parenthesis("(", true), new Parenthesis(")", false));
 		RegisterParenthesisPairs(defaultRegistry, new Parenthesis("[", true), new Parenthesis("]", false));
 		RegisterParenthesisPairs(defaultRegistry, new Parenthesis("{", true), new Parenthesis("}", false));
-		
+
 		return defaultRegistry;
 	}
 }

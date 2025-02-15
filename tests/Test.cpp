@@ -1,4 +1,4 @@
-#include "Rational.h"
+#include "DataTypes/Rational.h"
 #include "ASTParser.h"
 #include "ASTNodeTreeViewer.h"
 #include "ASTSimplifier.h"
@@ -350,6 +350,15 @@ namespace AST
 		SECTION("Simplify")
 		{
 			ASTNode* node = parserTest.mParser.Parse("0+x");
+			const ASTSimplifier& simplifier = ASTSimplifier::GetDefault();
+			ASTNode* simplifiedNode = simplifier.Simplify(node);
+			std::string out = ASTNodeTreeViewer::PrintTree(simplifiedNode);
+			std::cout << out << std::endl;
+		}
+
+		SECTION("Simplify2")
+		{
+			ASTNode* node = parserTest.mParser.Parse("1+2+3");
 			const ASTSimplifier& simplifier = ASTSimplifier::GetDefault();
 			ASTNode* simplifiedNode = simplifier.Simplify(node);
 			std::string out = ASTNodeTreeViewer::PrintTree(simplifiedNode);

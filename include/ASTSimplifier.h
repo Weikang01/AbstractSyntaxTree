@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include "Operation.h"
+#include "DataTypes/Operation.h"
 
 namespace AST
 {

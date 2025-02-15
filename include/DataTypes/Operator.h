@@ -1,6 +1,6 @@
 #pragma once
-#include "Symbol.h"
-#include "Operation.h"
+#include "DataTypes/Symbol.h"
+#include "DataTypes/Operation.h"
 
 namespace AST
 {

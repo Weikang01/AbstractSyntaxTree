@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
 
-#include "Rational.h"
-#include "Symbol.h"
-#include "Operator.h"
-#include "Irrational.h"
-#include "Parenthesis.h"
+#include "DataTypes/Rational.h"
+#include "DataTypes/Symbol.h"
+#include "DataTypes/Operator.h"
+#include "DataTypes/Irrational.h"
+#include "DataTypes/Parenthesis.h"
 
 namespace AST
 {

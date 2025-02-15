@@ -1,5 +1,5 @@
 #include "ASTSimplifier.h"
-#include "OperationSimplifyRules/SimplifyRulesAddition.h"
+#include "ASTSimplifierSimplifyRules.h"
 #include "ASTNode.h"
 
 namespace AST

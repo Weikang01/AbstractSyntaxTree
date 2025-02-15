@@ -1,5 +1,5 @@
 #pragma once
-#include "Symbol.h"
+#include "DataTypes/Symbol.h"
 
 namespace AST
 {
@@ -10,7 +10,8 @@ namespace AST
 
 		Parenthesis(const std::string& symbol, bool isOpen, Parenthesis* opposite = nullptr)
 			: Symbol(symbol), mIsOpen(isOpen), mOpposite(opposite)
-		{}
+		{
+		}
 
 		virtual ~Parenthesis() = default;
 

@@ -1,4 +1,4 @@
-#include "Rational.h"
+#include "DataTypes/Rational.h"
 #include <numeric> // For std::gcd
 #include <sstream>
 

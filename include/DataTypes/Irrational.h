@@ -1,5 +1,5 @@
 #pragma once
-#include "Symbol.h"
+#include "DataTypes/Symbol.h"
 
 namespace AST
 {
