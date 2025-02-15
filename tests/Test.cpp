@@ -266,6 +266,13 @@ namespace AST
 			std::cout << out << std::endl;
 		}
 
+		SECTION("Parse3")
+		{
+			ASTNode* node = parserTest.mParser.Parse("5x");
+			std::string out = ASTNodeTreeViewer::PrintTree(node);
+			std::cout << out << std::endl;
+		}
+
 		SECTION("ASTNodeTreeViewer")
 		{
 			OperatorNode* testOp1 = ParserTest::CreateOperatorNode("111111111111111111111111111111111111111111111111111111111111111", {});

@@ -6,6 +6,7 @@ namespace AST
 {
 	enum class OperatorType : uint8_t
 	{
+		Invalid,
 		Unary, // Unary operators have only one operand
 		Binary, // Binary operators have two operands
 		FunctionSingular, // Functions with one argument, e.g. sin, cos, tan

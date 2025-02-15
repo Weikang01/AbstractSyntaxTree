@@ -111,7 +111,7 @@ namespace AST
 
 	ASTParser::ParseResult ASTParser::ExtractOperator(const std::string& expression, const ASTNode::NodeType& lastNodeType, const size_t& offset)
 	{
-		return ExtractSymbol(mOperatorRegistry, expression, [&](const std::shared_ptr<Symbol>& symbol)
+		return ExtractSymbol(mSettings.mOperatorRegistry, expression, [&](const std::shared_ptr<Symbol>& symbol)
 			{
 				const Operator* op = dynamic_cast<const Operator*>(symbol.get());
 				if (op->mType == OperatorType::Binary && (lastNodeType == ASTNode::NodeType::Operator || lastNodeType == ASTNode::NodeType::Unknown)) {
@@ -122,12 +122,17 @@ namespace AST
 
 	ASTParser::ParseResult ASTParser::ExtractIrrational(const std::string& expression, const size_t& offset)
 	{
-		return ExtractSymbol(mIrrationalRegistry, expression, [&](const std::shared_ptr<Symbol>&) { return true; }, offset);
+		return ExtractSymbol(mSettings.mIrrationalRegistry, expression, [&](const std::shared_ptr<Symbol>&) { return true; }, offset);
 	}
 
 	ASTParser::ParseResult ASTParser::ExtractParenthesis(const std::string& expression, const size_t& offset)
 	{
-		return ExtractSymbol(mParenthesisRegistry, expression, [&](const std::shared_ptr<Symbol>&) { return true; }, offset);
+		return ExtractSymbol(mSettings.mParenthesisRegistry, expression, [&](const std::shared_ptr<Symbol>&) { return true; }, offset);
+	}
+
+	ASTParser::ParseResult ASTParser::ExtractCustomSymbol(const std::string& expression, const size_t& offset)
+	{
+		return ExtractSymbol(mSettings.mCustomSymbolRegistry, expression, [&](const std::shared_ptr<Symbol>&) { return true; }, offset);
 	}
 
 	ASTParser::ParseResult ASTParser::ExtractUnknownVariable(const std::string& expression, const size_t& offset)
@@ -234,9 +239,9 @@ namespace AST
 						{
 							ParenthesisNode* topParenthesisNode = dynamic_cast<ParenthesisNode*>(top);
 
-							if ((!mMatchExactParenthesis &&
+							if ((!mSettings.mMatchExactParenthesis &&
 								!topParenthesisNode->mParenthesis->mIsOpen) ||
-								(mMatchExactParenthesis &&
+								(mSettings.mMatchExactParenthesis &&
 									topParenthesisNode->mParenthesis->IsOpposite(parenthesisNode->mParenthesis)))
 							{
 								operatorStack.pop_back();
@@ -308,6 +313,15 @@ namespace AST
 				continue;
 			}
 
+			result = ExtractCustomSymbol(expression, offset);
+			if (!result.HasError())
+			{
+				operandStack.push_back(new VariableNode(result.mSymbol));
+				offset += result.mExtractedLength;
+				lastNodeType = ASTNode::NodeType::Variable;
+				continue;
+			}
+
 			// Unknown character fallback
 			result = ExtractUnknownVariable(expression, offset);
 			if (!result.HasError())
@@ -332,5 +346,15 @@ namespace AST
 		}
 
 		return operandStack.back();
+	}
+
+	void ASTParser::RegisterCustomSymbol(const std::string& symbol)
+	{
+		mSettings.mCustomSymbolRegistry.RegisterSymbol(std::make_shared<Symbol>(symbol));
+	}
+
+	void ASTParser::UnregisterCustomSymbol(const std::string& symbol)
+	{
+		mSettings.mCustomSymbolRegistry.UnregisterSymbol(symbol);
 	}
 }

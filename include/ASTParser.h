@@ -15,6 +15,34 @@ namespace AST
 	struct ASTNode;
 	struct OperatorNode;
 
+	struct ASTParserSettings
+	{
+		OperatorRegistry mOperatorRegistry = OperatorRegistry::GetDefaultRegistry();
+		IrrationalRegistry mIrrationalRegistry = IrrationalRegistry::GetDefaultRegistry();
+		ParenthesisRegistry mParenthesisRegistry = ParenthesisRegistry::GetDefaultRegistry();
+		SymbolRegistry mCustomSymbolRegistry = {};
+		bool mMatchExactParenthesis = true;
+		bool mImplicitOperatorInsertion = true;
+		std::shared_ptr<Operator> mImplicitOperator = nullptr;
+
+		ASTParserSettings()
+		{
+			if (mImplicitOperatorInsertion)
+			{
+				if (mImplicitOperator == nullptr)
+				{
+					mImplicitOperator = std::dynamic_pointer_cast<Operator>(
+						mOperatorRegistry.GetSymbol("*", [&](const std::shared_ptr<Symbol>&) { return true; })
+					);
+				}
+				else if (mImplicitOperator->mType != OperatorType::Binary)
+				{
+					throw std::invalid_argument("Implicit operator must be a binary operator.");
+				}
+			}
+		}
+	};
+
 	class ASTParser
 	{
 	public:
@@ -31,10 +59,7 @@ namespace AST
 #ifndef UNIT_TEST
 	private:
 #endif
-		OperatorRegistry mOperatorRegistry;
-		IrrationalRegistry mIrrationalRegistry;
-		ParenthesisRegistry mParenthesisRegistry;
-		bool mMatchExactParenthesis = true;
+		ASTParserSettings mSettings;
 
 		struct ParseResult
 		{
@@ -105,18 +130,15 @@ namespace AST
 
 		ParseResult ExtractParenthesis(const std::string& expression, const size_t& offset = 0);
 
+		ParseResult ExtractCustomSymbol(const std::string& expression, const size_t& offset = 0);
+
 		ParseResult ExtractUnknownVariable(const std::string& expression, const size_t& offset = 0);
 
 		void ReduceOperator(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, OperatorNode* topOperator = nullptr);
 
 	public:
-		ASTParser(const OperatorRegistry& operatorRegistry = OperatorRegistry::GetDefaultRegistry(),
-			const IrrationalRegistry& irrationalRegistry = IrrationalRegistry::GetDefaultRegistry(),
-			const ParenthesisRegistry& parenthesisRegistry = ParenthesisRegistry::GetDefaultRegistry())
-			:
-			mOperatorRegistry(operatorRegistry),
-			mIrrationalRegistry(irrationalRegistry),
-			mParenthesisRegistry(parenthesisRegistry)
+		ASTParser(const ASTParserSettings& settings = ASTParserSettings())
+			: mSettings(settings)
 		{
 		}
 		ASTParser(ASTParser&&) = default;
@@ -126,5 +148,8 @@ namespace AST
 		virtual ~ASTParser() = default;
 
 		ASTNode* Parse(const std::string& expression);
+
+		void RegisterCustomSymbol(const std::string& symbol);
+		void UnregisterCustomSymbol(const std::string& symbol);
 	};
 }

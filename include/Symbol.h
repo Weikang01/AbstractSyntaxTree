@@ -48,5 +48,7 @@ namespace AST
 		void UnregisterSymbol(const std::string& symbol);
 
 		const std::shared_ptr<SymbolSearchNode>& GetRoot() const { return mRoot; }
+
+		std::shared_ptr<Symbol> GetSymbol(const std::string& symbol, const std::function<bool(const std::shared_ptr<Symbol>&)>& findFirstMatch) const;
 	};
 }
