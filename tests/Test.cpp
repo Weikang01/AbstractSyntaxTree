@@ -358,7 +358,7 @@ namespace AST
 
 		SECTION("Simplify2")
 		{
-			ASTNode* node = parserTest.mParser.Parse("1+2+3");
+			ASTNode* node = parserTest.mParser.Parse("sin(x)+-sin(x)");
 			const ASTSimplifier& simplifier = ASTSimplifier::GetDefault();
 			ASTNode* simplifiedNode = simplifier.Simplify(node);
 			std::string out = ASTNodeTreeViewer::PrintTree(simplifiedNode);

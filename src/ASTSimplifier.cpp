@@ -332,7 +332,15 @@ namespace AST
 			auto ruleIt = mSimplifyRules.find(opNode->mOperator->mOperationId);
 			if (ruleIt != mSimplifyRules.end())
 			{
-				return ruleIt->second->Simplify(newOperands).mResult;
+				SimplifyResult result = ruleIt->second->Simplify(newOperands);
+				if (result.mSuccess)
+				{
+					return result.mResult;
+				}
+				else
+				{
+					return opNode->CloneWithNewOperands(newOperands);
+				}
 			}
 			else
 			{

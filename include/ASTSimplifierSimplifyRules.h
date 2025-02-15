@@ -6,4 +6,9 @@ namespace AST
 	{
 		AdditionSimplifyRule();
 	};
+
+	struct SubtractionSimplifyRule : public OperationSimplifyRule
+	{
+		SubtractionSimplifyRule();
+	};
 }

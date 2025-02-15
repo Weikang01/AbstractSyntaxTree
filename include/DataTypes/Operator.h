@@ -32,6 +32,8 @@ namespace AST
 		{
 		};
 
+		virtual bool operator==(const Symbol& other) const override;
+
 		virtual ~Operator() = default;
 	};
 

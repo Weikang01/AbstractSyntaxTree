@@ -2,6 +2,11 @@
 
 namespace AST
 {
+	bool Symbol::operator==(const Symbol& other) const
+	{
+		return mSymbol == other.mSymbol;
+	}
+
 	SymbolSearchNode::~SymbolSearchNode()
 	{
 		for (auto& child : mChildren)

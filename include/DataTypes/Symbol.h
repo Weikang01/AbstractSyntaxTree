@@ -11,6 +11,9 @@ namespace AST
 		std::string mSymbol;
 		Symbol(const std::string& symbol) : mSymbol(symbol) {};
 		virtual ~Symbol() = default;
+
+		virtual bool operator==(const Symbol& other) const;
+		bool operator!=(const Symbol& other) const { return !(*this == other); }
 	};
 
 	struct SymbolSearchNode

@@ -3,9 +3,9 @@
 
 namespace AST
 {
-	struct RationalSimplify : public ISimplifyRule
+	struct SubtractionSimplifyRule : public ISimplifyRule
 	{
-		RationalSimplify() : ISimplifyRule(0) {}
+		SubtractionSimplifyRule() : ISimplifyRule(0) {}
 
 		virtual bool Check(const std::vector<ASTNode*> operands) const
 		{
@@ -25,7 +25,7 @@ namespace AST
 			for (auto& operand : operands)
 			{
 				RationalNode* rationalNode = dynamic_cast<RationalNode*>(operand);
-				result += rationalNode->mValue;
+				result -= rationalNode->mValue;
 			}
 			return { true, new RationalNode(result) };
 		}
@@ -75,66 +75,9 @@ namespace AST
 		}
 	};
 
-	struct OppositeSimplify : public ISimplifyRule
-	{
-	private:
-		bool IsUnaryMinus(const ASTNode* node) const
-		{
-			if (node->mType != ASTNode::NodeType::Operator)
-			{
-				return false;
-			}
-			const OperatorNode* operatorNode = dynamic_cast<const OperatorNode*>(node);
-			if (operatorNode->mOperator->mOperationId != OperationId::UnaryMinus)
-			{
-				return false;
-			}
-			return true;
-		}
-
-		const ASTNode* GetUnaryMinusOperand(const ASTNode* node) const
-		{
-			const OperatorNode* operatorNode = dynamic_cast<const OperatorNode*>(node);
-			return operatorNode->mOperands[0];
-		}
-
-	public:
-		OppositeSimplify() : ISimplifyRule(1) {}
-
-		virtual bool Check(const std::vector<ASTNode*> operands) const
-		{
-			if (operands.size() != 2)
-			{
-				return false;
-			}
-
-			return IsUnaryMinus(operands[0]) || IsUnaryMinus(operands[1]);
-		}
-
-		virtual SimplifyResult Simplify(const std::vector<ASTNode*> operands) const
-		{
-			if (IsUnaryMinus(operands[0]))
-			{
-				if (*GetUnaryMinusOperand(operands[0]) == *operands[1])
-				{
-					return { true, new RationalNode(0) };
-				}
-			}
-			else
-			{
-				if (*GetUnaryMinusOperand(operands[1]) == *operands[0])
-				{
-					return { true, new RationalNode(0) };
-				}
-			}
-			return { false, nullptr };
-		}
-	};
-
 	AdditionSimplifyRule::AdditionSimplifyRule()
 	{
 		mRules.AddRule(new IdentitySimplify());
 		mRules.AddRule(new RationalSimplify());
-		mRules.AddRule(new OppositeSimplify());
 	}
 }

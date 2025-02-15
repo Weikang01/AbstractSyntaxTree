@@ -5,6 +5,15 @@
 
 namespace AST
 {
+	bool Operator::operator==(const Symbol& other) const
+	{
+		if (const auto* rhs = dynamic_cast<const Operator*>(&other))
+		{
+			return mSymbol == rhs->mSymbol && mType == rhs->mType && mAssociativity == rhs->mAssociativity && mPrecedence == rhs->mPrecedence && mOperationId == rhs->mOperationId;
+		}
+		return false;
+	}
+
 	const OperatorRegistry& OperatorRegistry::GetDefaultRegistry()
 	{
 		static OperatorRegistry defaultRegistry;

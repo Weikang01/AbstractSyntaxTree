@@ -29,6 +29,9 @@ namespace AST
 		virtual ~ASTNode() = default;
 
 		virtual ASTNode* Clone() const = 0;
+
+		virtual bool operator==(const ASTNode& other) const = 0;
+		bool operator!=(const ASTNode& other) const { return !(*this == other); }
 	};
 
 	struct RationalNode : public ASTNode
@@ -45,6 +48,7 @@ namespace AST
 			return new RationalNode(mValue);
 		}
 
+		virtual bool operator==(const ASTNode& other) const override;
 	};
 
 	struct IrrationalNode : public ASTNode
@@ -59,6 +63,8 @@ namespace AST
 		{
 			return new IrrationalNode(mIrrational);
 		}
+
+		virtual bool operator==(const ASTNode& other) const override;
 	};
 
 	struct VariableNode : public ASTNode
@@ -73,6 +79,8 @@ namespace AST
 		{
 			return new VariableNode(mVariable);
 		}
+
+		virtual bool operator==(const ASTNode& other) const override;
 	};
 
 	struct OperatorNode : public ASTNode
@@ -97,6 +105,9 @@ namespace AST
 			return node;
 		}
 
+		virtual bool operator==(const ASTNode& other) const override;
+
+
 		virtual ASTNode* CloneWithNewOperands(const std::vector<ASTNode*>& operands) const
 		{
 			OperatorNode* node = new OperatorNode(mOperator);
@@ -120,5 +131,7 @@ namespace AST
 		{
 			return new ParenthesisNode(mParenthesis);
 		}
+
+		virtual bool operator==(const ASTNode& other) const override;
 	};
 }
