@@ -25,22 +25,7 @@ namespace AST
 		bool mImplicitOperatorInsertion = true;
 		std::shared_ptr<Operator> mImplicitOperator = nullptr;
 
-		ASTParserSettings()
-		{
-			if (mImplicitOperatorInsertion)
-			{
-				if (mImplicitOperator == nullptr)
-				{
-					mImplicitOperator = std::dynamic_pointer_cast<Operator>(
-						mOperatorRegistry.GetSymbol("*", [&](const std::shared_ptr<Symbol>&) { return true; })
-					);
-				}
-				else if (mImplicitOperator->mType != OperatorType::Binary)
-				{
-					throw std::invalid_argument("Implicit operator must be a binary operator.");
-				}
-			}
-		}
+		ASTParserSettings();
 	};
 
 	class ASTParser
@@ -135,6 +120,10 @@ namespace AST
 		ParseResult ExtractUnknownVariable(const std::string& expression, const size_t& offset = 0);
 
 		void ReduceOperator(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, OperatorNode* topOperator = nullptr);
+
+		void HandleOperatorExtraction(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const Symbol* operatorSymbol);
+
+		void ImplicitOperatorInsertion(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const ASTNode::NodeType& lastNodeType);
 
 	public:
 		ASTParser(const ASTParserSettings& settings = ASTParserSettings())

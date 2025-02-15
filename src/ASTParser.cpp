@@ -2,6 +2,23 @@
 
 namespace AST
 {
+	ASTParserSettings::ASTParserSettings()
+	{
+		if (mImplicitOperatorInsertion)
+		{
+			if (mImplicitOperator == nullptr)
+			{
+				mImplicitOperator = std::dynamic_pointer_cast<Operator>(
+					mOperatorRegistry.GetSymbol("*", [&](const std::shared_ptr<Symbol>&) { return true; })
+				);
+			}
+			else if (mImplicitOperator->mType != OperatorType::Binary)
+			{
+				throw std::invalid_argument("Implicit operator must be a binary operator.");
+			}
+		}
+	}
+
 	ASTParser::ParseResult ASTParser::ExtractRational(const std::string& expression, const size_t& offset)
 	{
 		if (expression.size() <= offset)
@@ -202,6 +219,56 @@ namespace AST
 		}
 	}
 
+	void ASTParser::HandleOperatorExtraction(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const Symbol* operatorSymbol)
+	{
+		const Operator* op = dynamic_cast<const Operator*>(operatorSymbol);
+		while (!operatorStack.empty())
+		{
+			ASTNode* top = operatorStack.back();
+			if (top->mType == ASTNode::NodeType::Parenthesis)
+			{
+				break;
+			}
+			else if (top->mType == ASTNode::NodeType::Operator)
+			{
+				OperatorNode* operatorNode = dynamic_cast<OperatorNode*>(top);
+				if (operatorNode->mOperator->mPrecedence >= op->mPrecedence)
+				{
+					ReduceOperator(operandStack, operatorStack, operatorNode);
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+
+		operatorStack.push_back(new OperatorNode(op));
+	}
+
+	void ASTParser::ImplicitOperatorInsertion(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const ASTNode::NodeType& lastNodeType)
+	{
+		if (!mSettings.mImplicitOperatorInsertion || lastNodeType == ASTNode::NodeType::Operator || lastNodeType == ASTNode::NodeType::Unknown)
+		{
+			return;
+		}
+
+		if (operatorStack.size() != 0)
+		{
+			ASTNode* top = operatorStack.back();
+			if (top->mType == ASTNode::NodeType::Parenthesis)
+			{
+				ParenthesisNode* topParenthesisNode = dynamic_cast<ParenthesisNode*>(top);
+				if (topParenthesisNode->mParenthesis->mIsOpen)
+				{
+					return;
+				}
+			}
+		}
+
+		HandleOperatorExtraction(operandStack, operatorStack, mSettings.mImplicitOperator.get());
+	}
+
 	ASTNode* ASTParser::Parse(const std::string& expression)
 	{
 		std::deque<ASTNode*> operandStack;
@@ -221,6 +288,8 @@ namespace AST
 			ParseResult result = ExtractParenthesis(expression, offset);
 			if (!result.HasError())
 			{
+				ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+
 				ParenthesisNode* parenthesisNode = new ParenthesisNode(result.mSymbol);
 				offset += result.mExtractedLength;
 
@@ -266,6 +335,8 @@ namespace AST
 				result = ExtractRational(expression, offset);
 				if (!result.HasError())
 				{
+					ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+
 					operandStack.push_back(new RationalNode(ParseRational(expression, offset, result.mExtractedLength)));
 					offset += result.mExtractedLength;
 					lastNodeType = ASTNode::NodeType::Rational;
@@ -276,6 +347,8 @@ namespace AST
 			result = ExtractIrrational(expression, offset);
 			if (!result.HasError())
 			{
+				ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+
 				operandStack.push_back(new IrrationalNode(result.mSymbol));
 				offset += result.mExtractedLength;
 				lastNodeType = ASTNode::NodeType::Irrational;
@@ -285,29 +358,8 @@ namespace AST
 			result = ExtractOperator(expression, lastNodeType, offset);
 			if (!result.HasError())
 			{
-				const Operator* op = dynamic_cast<const Operator*>(result.mSymbol);
-				while (!operatorStack.empty())
-				{
-					ASTNode* top = operatorStack.back();
-					if (top->mType == ASTNode::NodeType::Parenthesis)
-					{
-						break;
-					}
-					else if (top->mType == ASTNode::NodeType::Operator)
-					{
-						OperatorNode* operatorNode = dynamic_cast<OperatorNode*>(top);
-						if (operatorNode->mOperator->mPrecedence >= op->mPrecedence)
-						{
-							ReduceOperator(operandStack, operatorStack, operatorNode);
-						}
-						else
-						{
-							break;
-						}
-					}
-				}
+				HandleOperatorExtraction(operandStack, operatorStack, result.mSymbol);
 
-				operatorStack.push_back(new OperatorNode(op));
 				offset += result.mExtractedLength;
 				lastNodeType = ASTNode::NodeType::Operator;
 				continue;
@@ -316,6 +368,8 @@ namespace AST
 			result = ExtractCustomSymbol(expression, offset);
 			if (!result.HasError())
 			{
+				ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+
 				operandStack.push_back(new VariableNode(result.mSymbol));
 				offset += result.mExtractedLength;
 				lastNodeType = ASTNode::NodeType::Variable;
@@ -326,6 +380,8 @@ namespace AST
 			result = ExtractUnknownVariable(expression, offset);
 			if (!result.HasError())
 			{
+				ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+
 				operandStack.push_back(new VariableNode(result.mSymbol));
 				offset += result.mExtractedLength;
 				lastNodeType = ASTNode::NodeType::Variable;
