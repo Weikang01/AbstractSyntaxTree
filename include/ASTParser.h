@@ -123,7 +123,7 @@ namespace AST
 
 		void HandleOperatorExtraction(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const Symbol* operatorSymbol);
 
-		void ImplicitOperatorInsertion(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const ASTNode::NodeType& lastNodeType);
+		void ImplicitOperatorInsertion(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const ASTNode* lastNode);
 
 	public:
 		ASTParser(const ASTParserSettings& settings = ASTParserSettings())

@@ -2,6 +2,25 @@
 
 namespace AST
 {
+	ASTNode::NodeType GetNodeType(const ASTNode* node)
+	{
+		if (node)
+		{
+			return node->mType;
+		}
+		return ASTNode::NodeType::Unknown;
+	}
+
+	OperatorType GetOperatorNodeType(const ASTNode* node)
+	{
+		if (node && node->mType == ASTNode::NodeType::Operator)
+		{
+			const OperatorNode* opNode = dynamic_cast<const OperatorNode*>(node);
+			return opNode->mOperator->mType;
+		}
+		return OperatorType::Invalid;
+	}
+
 	ASTParserSettings::ASTParserSettings()
 	{
 		if (mCustomSymbolRegistry == nullptr)
@@ -251,9 +270,9 @@ namespace AST
 		operatorStack.push_back(new OperatorNode(op));
 	}
 
-	void ASTParser::ImplicitOperatorInsertion(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const ASTNode::NodeType& lastNodeType)
+	void ASTParser::ImplicitOperatorInsertion(std::deque<ASTNode*>& operandStack, std::deque<ASTNode*>& operatorStack, const ASTNode* lastNode)
 	{
-		if (!mSettings.mImplicitOperatorInsertion || lastNodeType == ASTNode::NodeType::Operator || lastNodeType == ASTNode::NodeType::Unknown)
+		if (!mSettings.mImplicitOperatorInsertion || GetNodeType(lastNode) == ASTNode::NodeType::Operator || GetNodeType(lastNode) == ASTNode::NodeType::Unknown)
 		{
 			return;
 		}
@@ -274,12 +293,23 @@ namespace AST
 		HandleOperatorExtraction(operandStack, operatorStack, mSettings.mImplicitOperator.get());
 	}
 
+	bool ShouldParseRational(const ASTNode* lastNode)
+	{
+		const ASTNode::NodeType lastNodeType = GetNodeType(lastNode);
+		if (lastNodeType == ASTNode::NodeType::Parenthesis)
+		{
+			const ParenthesisNode* lastParenthesisNode = dynamic_cast<const ParenthesisNode*>(lastNode);
+			return lastParenthesisNode->mParenthesis->mIsOpen;
+		}
+
+		return lastNodeType != ASTNode::NodeType::Rational;
+	}
+
 	ASTNode* ASTParser::Parse(const std::string& expression)
 	{
 		std::deque<ASTNode*> operandStack;
 		std::deque<ASTNode*> operatorStack;
-
-		ASTNode::NodeType lastNodeType = ASTNode::NodeType::Unknown;
+		ASTNode* lastNode = nullptr;
 
 		size_t offset = 0;
 		while (offset < expression.size())
@@ -293,16 +323,15 @@ namespace AST
 			ParseResult result = ExtractParenthesis(expression, offset);
 			if (!result.HasError())
 			{
-				ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+				ImplicitOperatorInsertion(operandStack, operatorStack, lastNode);
 
 				ParenthesisNode* parenthesisNode = new ParenthesisNode(result.mSymbol);
 				offset += result.mExtractedLength;
+				lastNode = parenthesisNode;
 
 				if (parenthesisNode->mParenthesis->mIsOpen)
 				{
 					operatorStack.push_back(parenthesisNode);
-					lastNodeType = ASTNode::NodeType::Parenthesis;
-					continue;
 				}
 				else // closing parenthesis
 				{
@@ -333,18 +362,19 @@ namespace AST
 						}
 					}
 				}
+				continue;
 			}
 
-			if (lastNodeType != ASTNode::NodeType::Rational)
+			if (ShouldParseRational(lastNode))
 			{
 				result = ExtractRational(expression, offset);
 				if (!result.HasError())
 				{
-					ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+					ImplicitOperatorInsertion(operandStack, operatorStack, lastNode);
 
 					operandStack.push_back(new RationalNode(ParseRational(expression, offset, result.mExtractedLength)));
 					offset += result.mExtractedLength;
-					lastNodeType = ASTNode::NodeType::Rational;
+					lastNode = operandStack.back();
 					continue;
 				}
 			}
@@ -352,32 +382,38 @@ namespace AST
 			result = ExtractIrrational(expression, offset);
 			if (!result.HasError())
 			{
-				ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+				ImplicitOperatorInsertion(operandStack, operatorStack, lastNode);
 
 				operandStack.push_back(new IrrationalNode(result.mSymbol));
 				offset += result.mExtractedLength;
-				lastNodeType = ASTNode::NodeType::Irrational;
+				lastNode = operandStack.back();
 				continue;
 			}
 
-			result = ExtractOperator(expression, lastNodeType, offset);
+			result = ExtractOperator(expression, GetNodeType(lastNode), offset);
 			if (!result.HasError())
 			{
-				HandleOperatorExtraction(operandStack, operatorStack, result.mSymbol);
+				const Operator* op = dynamic_cast<const Operator*>(result.mSymbol);
+				if (op->mType == OperatorType::FunctionDual || op->mType == OperatorType::FunctionMultiple || op->mType == OperatorType::FunctionSingular)
+				{
+					ImplicitOperatorInsertion(operandStack, operatorStack, lastNode);
+				}
 
+				HandleOperatorExtraction(operandStack, operatorStack, result.mSymbol);
 				offset += result.mExtractedLength;
-				lastNodeType = ASTNode::NodeType::Operator;
+				lastNode = operatorStack.back();
+
 				continue;
 			}
 
 			result = ExtractCustomSymbol(expression, offset);
 			if (!result.HasError())
 			{
-				ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+				ImplicitOperatorInsertion(operandStack, operatorStack, lastNode);
 
 				operandStack.push_back(new VariableNode(result.mSymbol));
 				offset += result.mExtractedLength;
-				lastNodeType = ASTNode::NodeType::Variable;
+				lastNode = operandStack.back();
 				continue;
 			}
 
@@ -385,11 +421,11 @@ namespace AST
 			result = ExtractUnknownVariable(expression, offset);
 			if (!result.HasError())
 			{
-				ImplicitOperatorInsertion(operandStack, operatorStack, lastNodeType);
+				ImplicitOperatorInsertion(operandStack, operatorStack, lastNode);
 
 				operandStack.push_back(new VariableNode(result.mSymbol));
 				offset += result.mExtractedLength;
-				lastNodeType = ASTNode::NodeType::Variable;
+				lastNode = operandStack.back();
 				continue;
 			}
 		}
