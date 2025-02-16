@@ -21,6 +21,6 @@ namespace AST
 	class ParenthesisRegistry : public SymbolRegistry
 	{
 	public:
-		static const ParenthesisRegistry& GetDefaultRegistry();
+		static ParenthesisRegistry* GetDefaultRegistry();
 	};
 }

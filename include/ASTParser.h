@@ -17,10 +17,10 @@ namespace AST
 
 	struct ASTParserSettings
 	{
-		OperatorRegistry mOperatorRegistry = OperatorRegistry::GetDefaultRegistry();
-		IrrationalRegistry mIrrationalRegistry = IrrationalRegistry::GetDefaultRegistry();
-		ParenthesisRegistry mParenthesisRegistry = ParenthesisRegistry::GetDefaultRegistry();
-		SymbolRegistry mCustomSymbolRegistry = {};
+		OperatorRegistry* mOperatorRegistry = OperatorRegistry::GetDefaultRegistry();
+		IrrationalRegistry* mIrrationalRegistry = IrrationalRegistry::GetDefaultRegistry();
+		ParenthesisRegistry* mParenthesisRegistry = ParenthesisRegistry::GetDefaultRegistry();
+		SymbolRegistry* mCustomSymbolRegistry = nullptr;
 		bool mMatchExactParenthesis = true;
 		bool mImplicitOperatorInsertion = true;
 		std::shared_ptr<Operator> mImplicitOperator = nullptr;
@@ -107,7 +107,7 @@ namespace AST
 
 		Rational ParseRational(const std::string& expression, const size_t& offset, const size_t& mExtractedLength);
 
-		ParseResult ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const std::function<bool(const std::shared_ptr<Symbol>&)>& findFirstMatch, const size_t& offset = 0);
+		ParseResult ExtractSymbol(const SymbolRegistry* symbolRegistry, const std::string& expression, const std::function<bool(const std::shared_ptr<Symbol>&)>& findFirstMatch, const size_t& offset = 0);
 
 		ParseResult ExtractOperator(const std::string& expression, const ASTNode::NodeType& lastNodeType, const size_t& offset = 0);
 

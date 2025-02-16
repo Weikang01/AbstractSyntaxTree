@@ -39,7 +39,12 @@ namespace AST
 
 	class OperatorRegistry : public SymbolRegistry
 	{
+		std::map<OperationId, std::shared_ptr<Operator>> mOperatorMap;
 	public:
-		static const OperatorRegistry& GetDefaultRegistry();
+		static OperatorRegistry* GetDefaultRegistry();
+
+		void RegisterOperator(const OperatorType& type, const Associativity& associativity, const uint16_t& precedence, const std::string& symbol, const OperationId& operationId);
+
+		std::shared_ptr<Operator> GetOperator(const OperationId& operationId) const;
 	};
 }

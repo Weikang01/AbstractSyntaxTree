@@ -24,6 +24,6 @@ namespace AST
 	class IrrationalRegistry : public SymbolRegistry
 	{
 	public:
-		static const IrrationalRegistry& GetDefaultRegistry();
+		static IrrationalRegistry* GetDefaultRegistry();
 	};
 }

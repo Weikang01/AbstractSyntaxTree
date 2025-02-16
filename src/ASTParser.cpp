@@ -4,12 +4,17 @@ namespace AST
 {
 	ASTParserSettings::ASTParserSettings()
 	{
+		if (mCustomSymbolRegistry == nullptr)
+		{
+			mCustomSymbolRegistry = new SymbolRegistry();
+		}
+
 		if (mImplicitOperatorInsertion)
 		{
 			if (mImplicitOperator == nullptr)
 			{
 				mImplicitOperator = std::dynamic_pointer_cast<Operator>(
-					mOperatorRegistry.GetSymbol("*", [&](const std::shared_ptr<Symbol>&) { return true; })
+					mOperatorRegistry->GetSymbol("*", [&](const std::shared_ptr<Symbol>&) { return true; })
 				);
 			}
 			else if (mImplicitOperator->mType != OperatorType::Binary)
@@ -84,14 +89,14 @@ namespace AST
 		return Rational::FromString(numberStr);
 	}
 
-	ASTParser::ParseResult ASTParser::ExtractSymbol(const SymbolRegistry& symbolRegistry, const std::string& expression, const std::function<bool(const std::shared_ptr<Symbol>&)>& findFirstMatch, const size_t& offset)
+	ASTParser::ParseResult ASTParser::ExtractSymbol(const SymbolRegistry* symbolRegistry, const std::string& expression, const std::function<bool(const std::shared_ptr<Symbol>&)>& findFirstMatch, const size_t& offset)
 	{
 		if (expression.empty())
 		{
 			return ParseResult(0, ResultType::EmptyExpression);
 		}
 
-		std::shared_ptr<SymbolSearchNode> node = symbolRegistry.GetRoot();
+		std::shared_ptr<SymbolSearchNode> node = symbolRegistry->GetRoot();
 		std::shared_ptr<Symbol> longestMatchSymbol = nullptr;
 		size_t extractedLength = 0;
 		size_t searchLength = 0;
@@ -406,11 +411,11 @@ namespace AST
 
 	void ASTParser::RegisterCustomSymbol(const std::string& symbol)
 	{
-		mSettings.mCustomSymbolRegistry.RegisterSymbol(std::make_shared<Symbol>(symbol));
+		mSettings.mCustomSymbolRegistry->RegisterSymbol(std::make_shared<Symbol>(symbol));
 	}
 
 	void ASTParser::UnregisterCustomSymbol(const std::string& symbol)
 	{
-		mSettings.mCustomSymbolRegistry.UnregisterSymbol(symbol);
+		mSettings.mCustomSymbolRegistry->UnregisterSymbol(symbol);
 	}
 }

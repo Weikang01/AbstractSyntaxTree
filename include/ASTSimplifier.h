@@ -2,6 +2,7 @@
 #include <vector>
 #include <unordered_map>
 #include "DataTypes/Operation.h"
+#include "DataTypes/Operator.h"
 
 namespace AST
 {
@@ -47,8 +48,17 @@ namespace AST
 		OrderedSimplifyRuleList mRules;
 	};
 
+	struct ASTSimplifierSettings
+	{
+		OperatorRegistry* mOperatorRegistry = OperatorRegistry::GetDefaultRegistry();
+
+		ASTSimplifierSettings() = default;
+	};
+
 	class ASTSimplifier
 	{
+		ASTSimplifierSettings mSettings = {};
+
 		std::unordered_map<OperationId, const OperationSimplifyRule*> mSimplifyRules;
 
 	public:

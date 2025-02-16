@@ -75,6 +75,29 @@ namespace AST
 		}
 	};
 
+	// left * common + right * common = (left + right) * common
+	//ASTNode* CombineCommonTerms(const ASTNode* left, const ASTNode* right, const ASTNode* common)
+	//{
+
+	//}
+
+	struct SameTermSimplify : public ISimplifyRule
+	{
+		SameTermSimplify() : ISimplifyRule(1) {}
+		virtual bool Check(const std::vector<ASTNode*> operands) const
+		{
+			if (operands.size() != 2)
+			{
+				return false;
+			}
+			return *operands[0] == *operands[1];
+		}
+		virtual SimplifyResult Simplify(const std::vector<ASTNode*> operands) const
+		{
+			return { true, operands[0]->Clone() };
+		}
+	};
+
 	struct OppositeSimplify : public ISimplifyRule
 	{
 	private:
@@ -99,7 +122,7 @@ namespace AST
 		}
 
 	public:
-		OppositeSimplify() : ISimplifyRule(1) {}
+		OppositeSimplify() : ISimplifyRule(2) {}
 
 		virtual bool Check(const std::vector<ASTNode*> operands) const
 		{
