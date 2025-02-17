@@ -365,6 +365,23 @@ namespace AST
 			std::cout << out << std::endl;
 		}
 
+		SECTION("Simplify3")
+		{
+			ASTNode* node = parserTest.mParser.Parse("cos(x)+1.5cos(x)");
+			const ASTSimplifier& simplifier = ASTSimplifier::GetDefault();
+			ASTNode* simplifiedNode = simplifier.Simplify(node);
+			std::string out = ASTNodeTreeViewer::PrintTree(simplifiedNode);
+			std::cout << out << std::endl;
+		}
+
+		SECTION("Simplify4")
+		{
+			ASTNode* node = parserTest.mParser.Parse("1.5cos(x)+cos(x)+1.5cos(x)");
+			const ASTSimplifier& simplifier = ASTSimplifier::GetDefault();
+			ASTNode* simplifiedNode = simplifier.Simplify(node);
+			std::string out = ASTNodeTreeViewer::PrintTree(simplifiedNode);
+			std::cout << out << std::endl;
+		}
 	}
 
 }

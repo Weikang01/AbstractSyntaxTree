@@ -2,6 +2,28 @@
 
 namespace AST
 {
+	bool ASTNode::operator==(const ASTNode& other) const
+	{
+		if (mType != other.mType)
+			return false;
+
+		switch (mType)
+		{
+		case NodeType::Rational:
+			return *dynamic_cast<const RationalNode*>(this) == *dynamic_cast<const RationalNode*>(&other);
+		case NodeType::Irrational:
+			return *dynamic_cast<const IrrationalNode*>(this) == *dynamic_cast<const IrrationalNode*>(&other);
+		case NodeType::Variable:
+			return *dynamic_cast<const VariableNode*>(this) == *dynamic_cast<const VariableNode*>(&other);
+		case NodeType::Operator:
+			return *dynamic_cast<const OperatorNode*>(this) == *dynamic_cast<const OperatorNode*>(&other);
+		case NodeType::Parenthesis:
+			return *dynamic_cast<const ParenthesisNode*>(this) == *dynamic_cast<const ParenthesisNode*>(&other);
+		default:
+			return false;
+		}
+	}
+
 	bool RationalNode::operator==(const ASTNode& other) const
 	{
 		if (const auto* rhs = dynamic_cast<const RationalNode*>(&other))

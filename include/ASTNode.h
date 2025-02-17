@@ -30,7 +30,7 @@ namespace AST
 
 		virtual ASTNode* Clone() const = 0;
 
-		virtual bool operator==(const ASTNode& other) const = 0;
+		virtual bool operator==(const ASTNode& other) const;
 		bool operator!=(const ASTNode& other) const { return !(*this == other); }
 	};
 
@@ -90,6 +90,11 @@ namespace AST
 		std::vector<ASTNode*> mOperands;
 		OperatorNode(const Symbol* symbol)
 			: mOperator(dynamic_cast<const Operator*>(symbol)), ASTNode(NodeType::Operator)
+		{
+		}
+
+		OperatorNode(const Operator* op, const std::vector<ASTNode*>& operands)
+			: mOperator(op), mOperands(operands), ASTNode(NodeType::Operator)
 		{
 		}
 

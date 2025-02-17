@@ -1,12 +1,27 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+#include "DataTypes/Rational.h"
 #include "DataTypes/Operation.h"
 #include "DataTypes/Operator.h"
 
 namespace AST
 {
 	struct ASTNode;
+	struct RationalNode;
+	struct OperatorNode;
+	class ASTSimplifier;
+
+	struct SimplifyCheckResult
+	{
+		bool mSuccess = false;
+
+		SimplifyCheckResult() = default;
+		SimplifyCheckResult(const bool success) : mSuccess(success) {};
+		virtual ~SimplifyCheckResult() = default;
+
+		operator bool() const { return mSuccess; }
+	};
 
 	struct SimplifyResult
 	{
@@ -14,6 +29,7 @@ namespace AST
 		ASTNode* mResult = nullptr;
 		SimplifyResult() = default;
 		SimplifyResult(const bool success, ASTNode* result) : mSuccess(success), mResult(result) {}
+		virtual ~SimplifyResult() = default;
 	};
 
 	struct ISimplifyRule
@@ -21,8 +37,8 @@ namespace AST
 		int32_t mPriority = 0; // lower is higher priority
 		ISimplifyRule(const int32_t priority) : mPriority(priority) {}
 
-		virtual bool Check(const std::vector<ASTNode*> operands) const = 0;
-		virtual SimplifyResult Simplify(const std::vector<ASTNode*> operands) const = 0;
+		virtual std::unique_ptr<SimplifyCheckResult> Check(const std::vector<ASTNode*> operands) const = 0;
+		virtual SimplifyResult Simplify(const std::vector<ASTNode*> operands, const std::unique_ptr<SimplifyCheckResult>& checkResult) const = 0;
 	};
 
 	struct OrderedSimplifyRuleList
@@ -42,17 +58,25 @@ namespace AST
 		ConstIterator end() const { return mRules.end(); }
 	};
 
-	struct OperationSimplifyRule
-	{
-		virtual SimplifyResult Simplify(const std::vector<ASTNode*> operands) const;
-		OrderedSimplifyRuleList mRules;
-	};
-
 	struct ASTSimplifierSettings
 	{
 		OperatorRegistry* mOperatorRegistry = OperatorRegistry::GetDefaultRegistry();
 
 		ASTSimplifierSettings() = default;
+	};
+
+	struct OperationSimplifyRule
+	{
+		ASTSimplifier* mSimplifier = nullptr;
+
+		OperationSimplifyRule(ASTSimplifier* simplifier);
+		virtual ~OperationSimplifyRule() = default;
+
+		virtual SimplifyResult Simplify(const std::vector<ASTNode*> operands) const;
+		OrderedSimplifyRuleList mRules;
+
+		RationalNode* NewRationalNode(const Rational& value) const;
+		OperatorNode* NewOperatorNode(const OperationId operationId, const std::vector<ASTNode*>& operands) const;
 	};
 
 	class ASTSimplifier
@@ -65,6 +89,10 @@ namespace AST
 		void BindSimplifyRule(const OperationId operation, const OperationSimplifyRule* rule);
 
 		ASTNode* Simplify(ASTNode* node) const;
+
+		SimplifyResult SimplifyOperation(const OperationId operation, const std::vector<ASTNode*>& operands) const;
+
+		const ASTSimplifierSettings& GetSettings() const { return mSettings; }
 
 		static const ASTSimplifier& GetDefault();
 	};
