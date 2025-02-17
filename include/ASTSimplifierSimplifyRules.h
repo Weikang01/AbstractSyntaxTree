@@ -17,4 +17,9 @@ namespace AST
 	{
 		MultiplicationSimplifyRule(ASTSimplifier* simplifier);
 	};
+
+	struct UnaryPlusSimplifyRule : public OperationSimplifyRule
+	{
+		UnaryPlusSimplifyRule(ASTSimplifier* simplifier);
+	};
 }
